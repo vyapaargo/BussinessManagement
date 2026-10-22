@@ -54,9 +54,12 @@
         <div class="lg:col-span-2 space-y-6">
             <!-- Billing Details Card -->
             <div class="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-5 sm:p-6">
-                <h3 class="font-extrabold text-xs uppercase tracking-wider text-slate-950 border-b border-slate-200 pb-3 mb-4">
-                    1. Billing & Customer Details
-                </h3>
+                <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+                    <h3 class="font-extrabold text-xs uppercase tracking-wider text-slate-950">
+                        1. Billing &amp; Customer Details
+                    </h3>
+                    <span class="text-xs font-bold text-rose-500">* Required fields</span>
+                </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div id="clientSearchGroup" class="relative">
                         <div class="flex justify-between items-center mb-1">
@@ -82,7 +85,7 @@
             <div class="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-5 sm:p-6">
                 <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-200 pb-3 mb-4">
                     <h3 class="font-extrabold text-xs uppercase tracking-wider text-slate-950">
-                        2. Invoice Line Items
+                        2. Invoice Line Items <span class="text-rose-500 font-bold">*</span>
                     </h3>
                     <div id="productSearchGroup" class="w-full sm:w-80 relative">
                         <input type="text" id="productSearch" placeholder="Search product, SKU or scan barcode..." class="w-full border border-slate-300 rounded-lg text-xs sm:text-sm px-3 py-2 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-slate-950 placeholder-slate-400" autocomplete="off">
@@ -242,6 +245,7 @@
                 <button type="button" onclick="closeQuickClientModal()" class="text-slate-400 hover:text-white font-bold text-lg leading-none">&times;</button>
             </div>
             <div class="bg-white p-6 space-y-4">
+                <p class="text-xs text-rose-600 font-bold">* Required fields</p>
                 <div>
                     <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1">Client Name <span class="text-rose-600">*</span></label>
                     <input type="text" id="modalClientName" class="w-full border border-slate-300 rounded-lg text-xs sm:text-sm px-3 py-2 text-slate-950 focus:border-amber-500 focus:ring-1 focus:ring-amber-500" placeholder="Enter company or individual name">

@@ -18,8 +18,8 @@
         <div class="bg-gradient-to-r from-amber-500 to-amber-600 p-6 text-slate-950">
             <div class="flex justify-between items-center">
                 <div>
-                    <span class="text-[10px] font-black uppercase tracking-widest bg-slate-950 text-amber-400 px-2.5 py-1 rounded-full font-mono">Customer Self-Service</span>
-                    <h1 class="text-xl font-black mt-2">Lodge Support Ticket &amp; Complaint</h1>
+                    <span class="text-[10px] font-black uppercase tracking-widest bg-slate-950 text-amber-400 px-2.5 py-1 rounded-full font-mono">Customer Support</span>
+                    <h1 class="text-xl font-black mt-2">Submit Support Ticket &amp; Complaint</h1>
                 </div>
                 <div class="text-3xl">📝</div>
             </div>
@@ -28,6 +28,8 @@
 
         <form action="{{ route('public.complaint.store') }}" method="POST" class="p-6 space-y-4">
             @csrf
+
+            <p class="text-[11px] text-amber-400 font-medium"><span class="text-rose-500 font-bold">*</span> Indicates required fields</p>
 
             @if(session('error'))
                 <div class="p-3 bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs rounded-xl font-medium">
@@ -43,9 +45,17 @@
                 </div>
             @endif
 
+            @if($invoice)
+                <input type="hidden" name="invoice_id" value="{{ $invoice->id }}">
+            @endif
+
+            @if(isset($order) && $order)
+                <input type="hidden" name="order_id" value="{{ $order->id }}">
+            @endif
+
             <!-- Organization Selection -->
             <div>
-                <label class="block text-xs font-bold text-slate-300 mb-1.5">Select Business / Organization <span class="text-amber-400">*</span></label>
+                <label class="block text-xs font-bold text-slate-300 mb-1.5">Business / Organization <span class="text-rose-500 font-bold">*</span></label>
                 @if($selectedOrg)
                     <input type="hidden" name="organization_id" value="{{ $selectedOrg->id }}">
                     <div class="w-full bg-slate-900 border border-slate-800 px-3.5 py-2.5 rounded-xl text-xs font-extrabold text-amber-400">
@@ -73,27 +83,39 @@
                 </div>
             @endif
 
+            @if(isset($order) && $order)
+                <div class="bg-slate-900/80 border border-amber-500/30 p-3 rounded-xl flex justify-between items-center text-xs">
+                    <div>
+                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Related Restaurant Order:</span>
+                        <span class="font-extrabold text-white font-mono">#{{ $order->order_number }}</span>
+                    </div>
+                    <div class="text-right font-mono font-bold text-amber-400">
+                        ₹{{ number_format($order->total, 2) }}
+                    </div>
+                </div>
+            @endif
+
             <!-- Customer Details -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1">Your Full Name <span class="text-amber-400">*</span></label>
-                    <input type="text" name="name" value="{{ old('name', $invoice?->client?->name) }}" required placeholder="John Doe" class="w-full bg-slate-900 border border-slate-800 text-slate-200 text-xs rounded-xl p-3 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Your Full Name <span class="text-rose-500 font-bold">*</span></label>
+                    <input type="text" name="name" value="{{ old('name', $invoice?->client?->name ?? (isset($order) ? $order->customer_name : '')) }}" required placeholder="John Doe" class="w-full bg-slate-900 border border-slate-800 text-slate-200 text-xs rounded-xl p-3 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-300 mb-1">Email Address <span class="text-amber-400">*</span></label>
-                    <input type="email" name="email" value="{{ old('email', $invoice?->client?->email) }}" required placeholder="you@example.com" class="w-full bg-slate-900 border border-slate-800 text-slate-200 text-xs rounded-xl p-3 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                    <label class="block text-xs font-bold text-slate-300 mb-1">Email Address <span class="text-rose-500 font-bold">*</span></label>
+                    <input type="email" name="email" value="{{ old('email', $invoice?->client?->email ?? (isset($order) ? $order->customer_email : '')) }}" required placeholder="you@example.com" class="w-full bg-slate-900 border border-slate-800 text-slate-200 text-xs rounded-xl p-3 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
                 </div>
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-300 mb-1">Phone Number (Optional)</label>
-                <input type="text" name="phone" value="{{ old('phone', $invoice?->client?->phone) }}" placeholder="10-digit mobile number" class="w-full bg-slate-900 border border-slate-800 text-slate-200 text-xs rounded-xl p-3 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 font-mono">
+                <label class="block text-xs font-bold text-slate-300 mb-1">Phone Number (10-digit mobile)</label>
+                <input type="text" name="phone" value="{{ old('phone', $invoice?->client?->phone ?? (isset($order) ? $order->customer_phone : '')) }}" placeholder="e.g. 9876543210" maxlength="15" class="w-full bg-slate-900 border border-slate-800 text-slate-200 text-xs rounded-xl p-3 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 font-mono">
             </div>
 
             <!-- Complaint Details -->
             <div>
-                <label class="block text-xs font-bold text-slate-300 mb-1">Complaint Subject <span class="text-amber-400">*</span></label>
-                <input type="text" name="subject" value="{{ old('subject', $invoice ? 'Issue regarding Invoice #' . $invoice->invoice_number : '') }}" required placeholder="e.g., Payment deducted but status shown unpaid" class="w-full bg-slate-900 border border-slate-800 text-slate-200 text-xs rounded-xl p-3 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                <label class="block text-xs font-bold text-slate-300 mb-1">Complaint Subject <span class="text-rose-500 font-bold">*</span></label>
+                <input type="text" name="subject" value="{{ old('subject', $invoice ? 'Issue regarding Invoice #' . $invoice->invoice_number : (isset($order) && $order ? 'Issue regarding Order #' . $order->order_number : '')) }}" required placeholder="e.g., Payment deducted but status shown unpaid" class="w-full bg-slate-900 border border-slate-800 text-slate-200 text-xs rounded-xl p-3 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
             </div>
 
             <div>
@@ -107,8 +129,8 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-300 mb-1">Detailed Explanation <span class="text-amber-400">*</span></label>
-                <textarea name="description" rows="4" required placeholder="Please describe what happened, transaction reference, or any relevant details..." class="w-full bg-slate-900 border border-slate-800 text-slate-200 text-xs rounded-xl p-3 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 leading-relaxed">{{ old('description') }}</textarea>
+                <label class="block text-xs font-bold text-slate-300 mb-1">Detailed Explanation <span class="text-rose-500 font-bold">*</span></label>
+                <textarea name="description" rows="4" required placeholder="Please describe what happened, payment transaction ID, or any relevant details (minimum 10 characters)..." class="w-full bg-slate-900 border border-slate-800 text-slate-200 text-xs rounded-xl p-3 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 leading-relaxed">{{ old('description') }}</textarea>
             </div>
 
             <div class="pt-2">
@@ -119,7 +141,7 @@
             </div>
             
             <p class="text-[11px] text-slate-500 text-center pt-2">
-                🔒 Your ticket will be logged directly into the vendor support system.
+                🔒 Your ticket will be logged directly into the vendor support system with end-to-end audit tracking.
             </p>
         </form>
     </div>

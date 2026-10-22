@@ -370,7 +370,7 @@
         <!-- Sticky Bottom Action Bar (~64px) -->
         <div class="sticky bottom-4 z-20 mt-8 bg-white/95 backdrop-blur-md border border-slate-300 rounded-xl shadow-lg px-5 py-3 flex items-center justify-between gap-4">
             <div class="text-xs font-medium text-slate-700">
-                <span>Saving will update this employee across all assigned terminals.</span>
+                <span>Fields marked with (<span class="text-rose-500 font-bold">*</span>) are mandatory. Saving will update this employee across all assigned terminals.</span>
             </div>
 
             <div class="flex items-center gap-3">

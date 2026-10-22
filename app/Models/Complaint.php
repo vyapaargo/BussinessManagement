@@ -24,4 +24,14 @@ class Complaint extends Model
     {
         return $this->belongsTo(Employee::class, 'assigned_to');
     }
+
+    public function invoice()
+    {
+        return $this->belongsTo(Invoice::class);
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(RestaurantOrder::class, 'order_id');
+    }
 }

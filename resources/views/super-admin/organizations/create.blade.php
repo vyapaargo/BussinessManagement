@@ -10,11 +10,14 @@
     <form action="{{ route('super-admin.organizations.store') }}" method="POST" class="p-6 md:p-8">
         @csrf
         
-        <h3 class="text-lg font-bold mb-4 border-b pb-2">Business Details</h3>
+        <div class="flex justify-between items-center border-b pb-2 mb-4">
+            <h3 class="text-lg font-bold text-gray-900">Business Details</h3>
+            <span class="text-xs text-rose-600 font-bold">* Required fields</span>
+        </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div class="col-span-2 md:col-span-1">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Organization Name *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Organization Name <span class="text-rose-600 font-bold">*</span></label>
                 <input type="text" name="name" value="{{ old('name') }}" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
                 @error('name') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
             </div>
@@ -42,20 +45,20 @@
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div class="col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Admin Full Name *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Admin Full Name <span class="text-rose-600 font-bold">*</span></label>
                 <input type="text" name="admin_name" value="{{ old('admin_name') }}" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
                 @error('admin_name') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
             </div>
             
             <div class="col-span-2 md:col-span-1">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Admin Email (Login ID) *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Admin Email (Login ID) <span class="text-rose-600 font-bold">*</span></label>
                 <input type="email" name="admin_email" value="{{ old('admin_email') }}" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
                 @error('admin_email') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
             </div>
             
             <div class="col-span-2 md:col-span-1">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Initial Password *</label>
-                <input type="password" name="admin_password" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Initial Password <span class="text-rose-600 font-bold">*</span></label>
+                <input type="password" name="admin_password" required minlength="8" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
                 @error('admin_password') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
             </div>
         </div>

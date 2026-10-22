@@ -23,47 +23,69 @@
             @csrf
             
             <h3 class="font-bold text-base text-gray-900 border-b border-gray-100 pb-3">1. Plan Basic Details</h3>
+            <p class="text-xs text-rose-600 font-bold mb-4">* Required fields</p>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Plan Name *</label>
-                    <input type="text" name="name" value="{{ old('name') }}" placeholder="e.g. Pro Plan, Gold Plan" required class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Plan Name <span class="text-rose-600 font-bold">*</span></label>
+                    <input type="text" name="name" value="{{ old('name') }}" placeholder="e.g. 30 Days Monthly, 90 Days Quarterly, 1 Year Plan" required class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Plan Type</label>
-                    <select name="type" class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Plan Type <span class="text-rose-600 font-bold">*</span></label>
+                    <select name="type" required class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
                         <option value="base">Base Plan</option>
                         <option value="addon">Add-on Module</option>
                     </select>
                 </div>
             </div>
 
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Duration Value <span class="text-rose-600 font-bold">*</span></label>
+                    <input type="number" min="1" name="duration_value" value="{{ old('duration_value', 30) }}" placeholder="e.g. 7, 30, 90, 180, 365" required class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
+                    <p class="text-[10px] text-gray-500 mt-1">E.g., 30 for monthly, 90 for 3-month, 365 for annual.</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Duration Unit <span class="text-rose-600 font-bold">*</span></label>
+                    <select name="duration_unit" required class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
+                        <option value="days" {{ old('duration_unit', 'days') === 'days' ? 'selected' : '' }}>Days</option>
+                        <option value="months" {{ old('duration_unit') === 'months' ? 'selected' : '' }}>Months</option>
+                        <option value="years" {{ old('duration_unit') === 'years' ? 'selected' : '' }}>Years</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Plan Price (₹) <span class="text-rose-600 font-bold">*</span></label>
+                    <input type="number" step="0.01" min="0" name="price" value="{{ old('price', 0) }}" placeholder="e.g. 499.00" required class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
+                    <p class="text-[10px] text-gray-500 mt-1">Cost for this specific duration (0 for free trial).</p>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Target Audience (Category)</label>
-                    <select name="category" class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Target Audience (Category) <span class="text-rose-600 font-bold">*</span></label>
+                    <select name="category" required class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
                         <option value="business">Retail & Business</option>
                         <option value="restaurant">Restaurant POS</option>
                         <option value="all">All / Both</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Status</label>
-                    <select name="is_active" class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Status <span class="text-rose-600 font-bold">*</span></label>
+                    <select name="is_active" required class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
                         <option value="1">Active</option>
                         <option value="0">Inactive</option>
                     </select>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Monthly Price (₹) *</label>
-                    <input type="number" step="0.01" name="price_monthly" value="{{ old('price_monthly', 0) }}" required class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Monthly Reference Price (₹)</label>
+                    <input type="number" step="0.01" min="0" name="price_monthly" value="{{ old('price_monthly', 0) }}" class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-medium">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Yearly Price (₹) *</label>
-                    <input type="number" step="0.01" name="price_yearly" value="{{ old('price_yearly', 0) }}" required class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-semibold">
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Yearly Reference Price (₹)</label>
+                    <input type="number" step="0.01" min="0" name="price_yearly" value="{{ old('price_yearly', 0) }}" class="w-full border-gray-300 rounded-xl px-4 py-2 text-sm font-medium">
                 </div>
             </div>
 

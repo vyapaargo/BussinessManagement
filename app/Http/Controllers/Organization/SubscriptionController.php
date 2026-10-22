@@ -39,14 +39,14 @@ class SubscriptionController extends Controller
         $cycle = $request->input('billing_cycle', 'monthly');
         $addonIds = $request->input('addon_ids', []);
 
-        $basePrice = $cycle === 'yearly' ? $plan->price_yearly : $plan->price_monthly;
+        $basePrice = $plan->price > 0 ? $plan->price : ($cycle === 'yearly' ? $plan->price_yearly : $plan->price_monthly);
         $totalPrice = (float) $basePrice;
 
         $addons = [];
         if (!empty($addonIds) && is_array($addonIds)) {
-            $addonPlans = Plan::whereIn('id', $addonIds)->where('type', 'addon')->get();
+            $addonPlans = Plan::whereIn('id', $addonIds)->where('type', 'addon')->where('is_active', true)->get();
             foreach ($addonPlans as $addon) {
-                $addonPrice = $cycle === 'yearly' ? $addon->price_yearly : $addon->price_monthly;
+                $addonPrice = $addon->price > 0 ? $addon->price : ($cycle === 'yearly' ? $addon->price_yearly : $addon->price_monthly);
                 $totalPrice += (float) $addonPrice;
                 $addons[] = [
                     'id' => $addon->id,
@@ -193,7 +193,10 @@ class SubscriptionController extends Controller
             }
         }
 
-        $endsAt = $cycle === 'yearly' ? Carbon::today()->addYear() : Carbon::today()->addMonth();
+        $endsAt = $plan->calculateEndsAt(Carbon::today());
+        if ($cycle === 'yearly' && $plan->duration_unit === 'days' && $plan->duration_value == 30) {
+            $endsAt = Carbon::today()->addYearsNoOverflow(1);
+        }
 
         // Create new active subscription
         OrganizationSubscription::create([
@@ -217,7 +220,7 @@ class SubscriptionController extends Controller
         $newPlan = Plan::findOrFail($request->plan_id);
         $cycle = $request->input('billing_cycle', 'monthly');
         
-        $price = $cycle === 'yearly' ? $newPlan->price_yearly : $newPlan->price_monthly;
+        $price = $newPlan->price > 0 ? (float)$newPlan->price : ($cycle === 'yearly' ? (float)$newPlan->price_yearly : (float)$newPlan->price_monthly);
 
         if ($price > 0) {
             return back()->with('error', 'Paid plans require online payment via Razorpay. Please click "Switch to ' . $newPlan->name . '" to pay.');

@@ -168,6 +168,6 @@ class SubscriptionService
 
         if ($subscription->ends_at->isPast() && !$subscription->ends_at->isToday()) return 0;
 
-        return (int) now()->startOfDay()->diffInDays($subscription->ends_at->startOfDay(), false);
+        return max(0, (int) now()->startOfDay()->diffInDays($subscription->ends_at->startOfDay(), false));
     }
 }

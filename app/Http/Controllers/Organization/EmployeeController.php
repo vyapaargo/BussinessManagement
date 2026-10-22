@@ -93,8 +93,8 @@ class EmployeeController extends Controller implements HasMiddleware
             'first_name' => 'required|string|max:255',
             'last_name' => 'nullable|string|max:255',
             'employee_code' => 'nullable|string|max:50',
-            'email' => 'nullable|email|max:255',
-            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
+            'email' => 'nullable|email:rfc,filter|max:255',
+            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9](?:[\-\s]?[0-9]){9}$/'],
             'designation' => 'nullable|string|max:255',
             'joining_date' => 'nullable|date',
             'locations' => 'nullable|array',
@@ -104,15 +104,21 @@ class EmployeeController extends Controller implements HasMiddleware
             'password' => ['nullable', 'required_if:create_account,1', Password::defaults()],
             'role' => 'nullable|required_if:create_account,1|exists:roles,name',
         ], [
+            'first_name.required' => 'Employee first name is required.',
             'phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
+            'email.email' => 'Please provide a valid email address.',
         ]);
 
+        $normalizedPhone = $request->phone ? substr(preg_replace('/[^0-9]/', '', $request->phone), -10) : null;
 
         if ($request->create_account) {
-            $request->validate(['email' => 'required|email|unique:users,email']);
+            $request->validate(['email' => 'required|email:rfc,filter|unique:users,email'], [
+                'email.required' => 'Email is required when creating a system login account.',
+                'email.unique' => 'This email address is already in use by another user account.',
+            ]);
         }
 
-        DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request, $normalizedPhone) {
             $userId = null;
             
             if ($request->create_account) {
@@ -138,7 +144,7 @@ class EmployeeController extends Controller implements HasMiddleware
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
                 'email' => $request->email,
-                'phone' => $request->phone,
+                'phone' => $normalizedPhone,
                 'designation' => $request->designation,
                 'joining_date' => $request->joining_date,
                 'address' => $request->address,
@@ -175,8 +181,8 @@ class EmployeeController extends Controller implements HasMiddleware
             'first_name' => 'required|string|max:255',
             'last_name' => 'nullable|string|max:255',
             'employee_code' => 'nullable|string|max:50',
-            'email' => 'nullable|email|max:255',
-            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
+            'email' => 'nullable|email:rfc,filter|max:255',
+            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9](?:[\-\s]?[0-9]){9}$/'],
             'designation' => 'nullable|string|max:255',
             'joining_date' => 'nullable|date',
             'locations' => 'nullable|array',
@@ -187,12 +193,16 @@ class EmployeeController extends Controller implements HasMiddleware
             'reset_password' => 'nullable|boolean',
             'password' => ['nullable', Password::defaults()],
         ], [
+            'first_name.required' => 'Employee first name is required.',
             'phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
+            'email.email' => 'Please provide a valid email address.',
         ]);
+
+        $normalizedPhone = $request->phone ? substr(preg_replace('/[^0-9]/', '', $request->phone), -10) : null;
 
         if ($employee->user_id) {
             if ($request->email !== $employee->user->email) {
-                $request->validate(['email' => 'required|email|unique:users,email,'.$employee->user_id]);
+                $request->validate(['email' => 'required|email:rfc,filter|unique:users,email,'.$employee->user_id]);
             }
             if ($request->reset_password) {
                 $request->validate(['password' => 'required']);
@@ -200,20 +210,20 @@ class EmployeeController extends Controller implements HasMiddleware
         } else {
             if ($request->create_account) {
                 $request->validate([
-                    'email' => 'required|email|unique:users,email',
+                    'email' => 'required|email:rfc,filter|unique:users,email',
                     'password' => 'required',
                     'role' => 'required|exists:roles,name',
                 ]);
             }
         }
 
-        DB::transaction(function () use ($request, $employee) {
+        DB::transaction(function () use ($request, $employee, $normalizedPhone) {
             $employee->update([
                 'employee_code' => $request->employee_code,
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
                 'email' => $request->email,
-                'phone' => $request->phone,
+                'phone' => $normalizedPhone,
                 'designation' => $request->designation,
                 'joining_date' => $request->joining_date,
                 'address' => $request->address,

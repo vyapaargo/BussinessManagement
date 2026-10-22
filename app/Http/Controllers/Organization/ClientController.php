@@ -3,88 +3,66 @@
 namespace App\Http\Controllers\Organization;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Client;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Http\Request;
 
-class ClientController extends Controller implements HasMiddleware
+class ClientController extends Controller
 {
-    public static function middleware(): array
-    {
-        return [
-            new Middleware('permission:clients.create', only: ['create', 'store', 'quickStore']),
-            new Middleware('permission:clients.edit', only: ['edit', 'update']),
-            new Middleware('permission:clients.delete', only: ['destroy']),
-        ];
-    }
     public function index(Request $request)
     {
         $orgId = auth()->user()->organization_id;
-
-        // Quota & capacity limit check
-        $currentClientsCount = Client::where('organization_id', $orgId)->count();
-        $maxClients = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_clients');
-        $limitReached = \App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_clients', $currentClientsCount);
-
-        // Overall stats for KPI cards
-        $totalClients = $currentClientsCount;
-        $activeClientsCount = Client::where('organization_id', $orgId)->where('is_active', true)->count();
-        $inactiveClientsCount = $totalClients - $activeClientsCount;
-
-        // Total receivables across organization clients
-        $allInvoices = \App\Models\Invoice::where('organization_id', $orgId)
-            ->where('status', '!=', 'Cancelled')
-            ->select('grand_total', 'amount_paid')
-            ->get();
-        $totalReceivables = $allInvoices->sum(fn($inv) => max(0, $inv->grand_total - $inv->amount_paid));
-
-        // Base query
-        $query = Client::where('organization_id', $orgId);
         $locationId = \App\Services\LocationManager::getActiveLocationId();
+        
+        $clientsCount = Client::where('organization_id', $orgId)->count();
+        $isClientLimitReached = \App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_clients', $clientsCount);
+        $maxClientsAllowed = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_clients', 'Unlimited');
 
+        $query = Client::where('organization_id', $orgId);
+
+        // Branch filtering: Org Admins see all, Staff see active branch + unassigned
         if (!auth()->user()->hasRole('Organization Admin') && !auth()->user()->hasRole('Super Admin')) {
             $query->where(function($q) use ($locationId) {
                 $q->where('location_id', $locationId)
-                  ->orWhereNull('location_id'); // Fallback for globally shared or old clients if needed
+                  ->orWhereNull('location_id');
             });
+        } elseif ($request->filled('location_id')) {
+            $query->where('location_id', $request->location_id);
         }
 
-        // Filter by search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
                   ->orWhere('gst_number', 'like', "%{$search}%");
             });
         }
 
-        // Filter by status
-        if ($request->filled('status')) {
-            if ($request->status === 'active') {
-                $query->where('is_active', true);
-            } elseif ($request->status === 'inactive') {
-                $query->where('is_active', false);
-            }
-        }
+        $clients = $query->latest()->paginate(15)->withQueryString();
 
-        $clients = $query->withCount('invoices')->latest()->paginate(15)->withQueryString();
-
-        return view('organization.clients.index', compact(
-            'clients',
-            'totalClients',
-            'activeClientsCount',
-            'inactiveClientsCount',
-            'totalReceivables',
-            'maxClients',
-            'limitReached'
-        ));
+        return view('organization.clients.index', [
+            'clients' => $clients,
+            'isClientLimitReached' => $isClientLimitReached,
+            'limitReached' => $isClientLimitReached,
+            'clientsCount' => $clientsCount,
+            'totalClients' => $clientsCount,
+            'maxClientsAllowed' => $maxClientsAllowed,
+            'maxClients' => $maxClientsAllowed,
+        ]);
     }
 
     public function create()
     {
+        $orgId = auth()->user()->organization_id;
+        $clientsCount = Client::where('organization_id', $orgId)->count();
+
+        if (\App\Services\SubscriptionService::hasReachedLimit($orgId, 'max_clients', $clientsCount)) {
+            $limit = \App\Services\SubscriptionService::getFeatureValue($orgId, 'max_clients');
+            return redirect()->route('organization.clients.index')
+                ->with('error', "Client limit reached ({$clientsCount}/{$limit}). Please upgrade your plan to add more clients.");
+        }
+
         return view('organization.clients.create');
     }
 
@@ -100,20 +78,24 @@ class ClientController extends Controller implements HasMiddleware
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
-            'email' => 'nullable|email|max:255',
+            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9](?:[\-\s]?[0-9]){9}$/'],
+            'email' => 'nullable|email:rfc,filter|max:255',
             'address' => 'nullable|string',
             'gst_number' => 'nullable|string|max:50',
             'notes' => 'nullable|string',
         ], [
+            'name.required' => 'Client / Company name is required.',
             'phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
+            'email.email' => 'Please enter a valid email address.',
         ]);
+
+        $normalizedPhone = $request->phone ? substr(preg_replace('/[^0-9]/', '', $request->phone), -10) : null;
 
         Client::create([
             'organization_id' => auth()->user()->organization_id,
             'location_id' => \App\Services\LocationManager::getActiveLocationId(),
             'name' => $request->name,
-            'phone' => $request->phone,
+            'phone' => $normalizedPhone,
             'email' => $request->email,
             'address' => $request->address,
             'gst_number' => $request->gst_number,
@@ -142,18 +124,22 @@ class ClientController extends Controller implements HasMiddleware
         
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
-            'email' => 'nullable|email|max:255',
+            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9](?:[\-\s]?[0-9]){9}$/'],
+            'email' => 'nullable|email:rfc,filter|max:255',
             'address' => 'nullable|string',
             'gst_number' => 'nullable|string|max:50',
             'notes' => 'nullable|string',
         ], [
+            'name.required' => 'Client / Company name is required.',
             'phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
+            'email.email' => 'Please enter a valid email address.',
         ]);
+
+        $normalizedPhone = $request->phone ? substr(preg_replace('/[^0-9]/', '', $request->phone), -10) : null;
 
         $client->update([
             'name' => $request->name,
-            'phone' => $request->phone,
+            'phone' => $normalizedPhone,
             'email' => $request->email,
             'address' => $request->address,
             'gst_number' => $request->gst_number,
@@ -205,17 +191,21 @@ class ClientController extends Controller implements HasMiddleware
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9][0-9]{9}$/'],
-            'email' => 'nullable|email|max:255',
+            'phone' => ['nullable', 'string', 'regex:/^(?:\+91[\-\s]?|0)?[6-9](?:[\-\s]?[0-9]){9}$/'],
+            'email' => 'nullable|email:rfc,filter|max:255',
         ], [
+            'name.required' => 'Client name is required.',
             'phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
+            'email.email' => 'Please enter a valid email address.',
         ]);
+
+        $normalizedPhone = $request->phone ? substr(preg_replace('/[^0-9]/', '', $request->phone), -10) : null;
 
         $client = Client::create([
             'organization_id' => auth()->user()->organization_id,
             'location_id' => \App\Services\LocationManager::getActiveLocationId(),
             'name' => $request->name,
-            'phone' => $request->phone,
+            'phone' => $normalizedPhone,
             'email' => $request->email,
             'is_active' => true,
         ]);
@@ -233,9 +223,6 @@ class ClientController extends Controller implements HasMiddleware
     public function destroy(Client $client)
     {
         abort_if($client->organization_id !== auth()->user()->organization_id, 403);
-        if ($client->invoices()->count() > 0) {
-            return redirect()->route('organization.clients.index')->with('error', 'Cannot delete client who has associated invoices.');
-        }
         $client->delete();
         return redirect()->route('organization.clients.index')->with('success', 'Client deleted successfully.');
     }

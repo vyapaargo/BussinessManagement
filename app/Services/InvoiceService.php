@@ -171,8 +171,8 @@ class InvoiceService
             return $invoice;
         });
 
-        // Auto-send invoice if client has email and it's not a draft
-        if ($createdInvoice->client_id && $createdInvoice->status !== 'Draft' && $createdInvoice->client && $createdInvoice->client->email) {
+        // Auto-send invoice if client has email, not a draft, and email has not already been sent
+        if ($createdInvoice->client_id && $createdInvoice->status !== 'Draft' && !$createdInvoice->email_sent_at && $createdInvoice->client && $createdInvoice->client->email) {
             try {
                 \App\Services\CommunicationService::sendInvoice($createdInvoice);
             } catch (\Exception $e) {
@@ -274,8 +274,8 @@ class InvoiceService
             return $invoice;
         });
 
-        // Auto-send invoice if client has email
-        if ($finalizedInvoice->client_id && $finalizedInvoice->client && $finalizedInvoice->client->email) {
+        // Auto-send invoice if client has email and email has not already been sent
+        if ($finalizedInvoice->client_id && !$finalizedInvoice->email_sent_at && $finalizedInvoice->client && $finalizedInvoice->client->email) {
             try {
                 \App\Services\CommunicationService::sendInvoice($finalizedInvoice);
             } catch (\Exception $e) {

@@ -44,9 +44,12 @@
             <div class="lg:col-span-2 space-y-6">
                 <!-- Panel 1: Basic Information -->
                 <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 space-y-4">
-                    <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
-                        <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center font-bold">▶</div>
-                        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-widest">Basic Information</h2>
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center font-bold">▶</div>
+                            <h2 class="text-sm font-bold text-slate-800 uppercase tracking-widest">Basic Information</h2>
+                        </div>
+                        <span class="text-xs text-rose-500 font-bold">* Required fields</span>
                     </div>
                     
                     <div class="space-y-4">

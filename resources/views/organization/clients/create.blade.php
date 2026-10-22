@@ -41,11 +41,14 @@
         
         <div class="p-6 md:p-8 space-y-6">
             <!-- Section Header -->
-            <div class="flex items-center gap-2.5 pb-3 border-b border-slate-100">
-                <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center font-black text-xs">
-                    📝
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center font-black text-xs">
+                        📝
+                    </div>
+                    <h2 class="text-xs font-extrabold text-slate-950 uppercase tracking-wider">Client Profile &amp; Contact Parameters</h2>
                 </div>
-                <h2 class="text-xs font-extrabold text-slate-950 uppercase tracking-wider">Client Profile &amp; Contact Parameters</h2>
+                <span class="text-xs font-bold text-rose-500">* Required fields</span>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">

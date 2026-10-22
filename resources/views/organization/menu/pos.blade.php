@@ -46,6 +46,10 @@
                class="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-800 rounded-xl text-xs font-bold transition border border-slate-200/90 whitespace-nowrap shadow-2xs">
                 🪑 Floor Tables
             </a>
+            <button type="button" @click="printerModalOpen = true" 
+                    class="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-800 rounded-xl text-xs font-bold transition border border-slate-200/90 whitespace-nowrap shadow-2xs flex items-center gap-1.5 cursor-pointer">
+                <span>🖨️ Printer (<span x-text="printerPaperSize"></span>)</span>
+            </button>
         </div>
     </div>
 
@@ -515,6 +519,60 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- THERMAL PRINTER SETTINGS MODAL             -->
+    <!-- ========================================== -->
+    <div x-show="printerModalOpen" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4" style="display: none;" x-cloak>
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4 border border-slate-200" @click.away="printerModalOpen = false">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                <h3 class="font-extrabold text-sm text-slate-950 flex items-center gap-2">
+                    <span>🖨️ Thermal Printer Setup</span>
+                </h3>
+                <button type="button" @click="printerModalOpen = false" class="text-slate-400 hover:text-slate-600 font-bold cursor-pointer">✕</button>
+            </div>
+
+            <div class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 uppercase tracking-wider mb-2">Receipt Paper Width</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" @click="printerPaperSize = '58mm'" 
+                                :class="printerPaperSize === '58mm' ? 'bg-indigo-600 text-white font-black border-indigo-600 shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'"
+                                class="p-3 rounded-xl border text-center transition cursor-pointer">
+                            <div class="font-bold text-sm">58 mm</div>
+                            <div class="text-[10px] opacity-80 mt-0.5">2-inch Portable/Thermal</div>
+                        </button>
+                        <button type="button" @click="printerPaperSize = '80mm'" 
+                                :class="printerPaperSize === '80mm' ? 'bg-indigo-600 text-white font-black border-indigo-600 shadow-xs' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'"
+                                class="p-3 rounded-xl border text-center transition cursor-pointer">
+                            <div class="font-bold text-sm">80 mm</div>
+                            <div class="text-[10px] opacity-80 mt-0.5">3-inch Standard POS</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+                    <div>
+                        <div class="font-bold text-slate-900">Auto-Print on Settle</div>
+                        <div class="text-[10px] text-slate-500">Trigger printer immediately when bill is settled</div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" x-model="printerAutoPrint" class="sr-only peer">
+                        <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 flex gap-2">
+                <button type="button" @click="savePrinterSettings()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow-xs cursor-pointer">
+                    Save Printer Preference
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden iframe for seamless direct thermal printing without page navigation -->
+    <iframe id="pos-print-frame" style="position:fixed; right:0; bottom:0; width:0; height:0; border:0; visibility:hidden;"></iframe>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
@@ -525,6 +583,9 @@ function waiterPos() {
         tableFilter: 'all',
         selectedTableId: null,
         selectedTableName: '',
+        printerModalOpen: false,
+        printerPaperSize: localStorage.getItem('pos_printer_paper_size') || '80mm',
+        printerAutoPrint: localStorage.getItem('pos_auto_print') !== 'false',
         orderType: 'Dine-in',
         selectedCategory: 'all',
         searchQuery: '',
@@ -899,6 +960,33 @@ function waiterPos() {
             });
         },
 
+        savePrinterSettings() {
+            localStorage.setItem('pos_printer_paper_size', this.printerPaperSize);
+            localStorage.setItem('pos_auto_print', this.printerAutoPrint ? 'true' : 'false');
+            this.printerModalOpen = false;
+        },
+
+        printReceiptDirect(receiptUrl) {
+            if (!receiptUrl) return;
+            const size = this.printerPaperSize || localStorage.getItem('pos_printer_paper_size') || '80mm';
+            const targetUrl = receiptUrl + (receiptUrl.includes('?') ? '&' : '?') + 'paper_size=' + size + '&direct=1';
+            
+            let iframe = document.getElementById('pos-print-frame');
+            if (!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = 'pos-print-frame';
+                iframe.style.position = 'fixed';
+                iframe.style.right = '0';
+                iframe.style.bottom = '0';
+                iframe.style.width = '0';
+                iframe.style.height = '0';
+                iframe.style.border = '0';
+                iframe.style.visibility = 'hidden';
+                document.body.appendChild(iframe);
+            }
+            iframe.src = targetUrl;
+        },
+
         executeSettle() {
             this.loading = true;
             fetch(`/organization/menu/pos/orders/${this.activeOrderIds[0]}/settle`, {
@@ -927,7 +1015,9 @@ function waiterPos() {
                     this.settleModalOpen = false;
                     const tableId = this.selectedTableId;
                     this.resetForm();
-                    window.open(data.print_receipt_url, '_blank');
+                    if (this.printerAutoPrint) {
+                        this.printReceiptDirect(data.print_receipt_url);
+                    }
                     if (tableId) {
                         this.getTableOrder(tableId);
                     }

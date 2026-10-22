@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Services\SubscriptionService;
+use Illuminate\Support\Facades\Auth;
 
 class CheckSubscriptionValidity
 {
@@ -29,8 +30,25 @@ class CheckSubscriptionValidity
             return $next($request);
         }
 
-        // Allow subscription page, logout, and profile routes
-        if ($request->routeIs('organization.subscription.*') || $request->routeIs('logout') || $request->routeIs('profile.*') || $request->routeIs('organization.profile*')) {
+        // Allow logout
+        if ($request->routeIs('logout')) {
+            return $next($request);
+        }
+
+        // Verify organization active status
+        $org = $user->organization;
+        if ($org && !$org->is_active) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')->withErrors([
+                'email' => 'Your organization account has been deactivated by the administrator. Please contact support.',
+            ]);
+        }
+
+        // Allow subscription page and profile routes
+        if ($request->routeIs('organization.subscription.*') || $request->routeIs('profile.*') || $request->routeIs('organization.profile*')) {
             return $next($request);
         }
 

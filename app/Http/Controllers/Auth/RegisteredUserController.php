@@ -108,7 +108,7 @@ class RegisteredUserController extends Controller
             ->firstOrFail();
 
         $cycle = $request->billing_cycle;
-        $basePrice = (float) ($cycle === 'yearly' ? $plan->price_yearly : $plan->price_monthly);
+        $basePrice = $plan->price > 0 ? (float)$plan->price : (float) ($cycle === 'yearly' ? $plan->price_yearly : $plan->price_monthly);
         $totalPrice = $basePrice;
 
         $addonIds = $request->input('addon_ids', []);
@@ -116,7 +116,7 @@ class RegisteredUserController extends Controller
         if (!empty($addonIds) && is_array($addonIds)) {
             $addonModels = \App\Models\Plan::whereIn('id', $addonIds)->where('type', 'addon')->where('is_active', true)->get();
             foreach ($addonModels as $addon) {
-                $addonPrice = (float) ($cycle === 'yearly' ? $addon->price_yearly : $addon->price_monthly);
+                $addonPrice = $addon->price > 0 ? (float)$addon->price : (float) ($cycle === 'yearly' ? $addon->price_yearly : $addon->price_monthly);
                 $totalPrice += $addonPrice;
                 $selectedAddons[] = [
                     'name' => $addon->name,
@@ -280,7 +280,7 @@ class RegisteredUserController extends Controller
             $org = \App\Models\Organization::create([
                 'name' => $request->organization_name,
                 'email' => $request->email,
-                'phone' => $request->business_phone,
+                'phone' => substr(preg_replace('/[^0-9]/', '', $request->business_phone), -10),
                 'business_type' => $request->business_type,
                 'gst_number' => $request->gst_number,
                 'address' => $fullAddress,
@@ -299,7 +299,7 @@ class RegisteredUserController extends Controller
                 'first_name' => explode(' ', $request->name)[0] ?? $request->name,
                 'last_name' => count(explode(' ', $request->name)) > 1 ? implode(' ', array_slice(explode(' ', $request->name), 1)) : null,
                 'email' => $request->email,
-                'phone' => $request->admin_phone,
+                'phone' => substr(preg_replace('/[^0-9]/', '', $request->admin_phone), -10),
                 'designation' => 'Owner / Admin',
             ]);
 
@@ -307,7 +307,7 @@ class RegisteredUserController extends Controller
                 'organization_id' => $org->id,
                 'name' => 'Main Branch',
                 'address' => $fullAddress,
-                'phone' => $request->business_phone,
+                'phone' => substr(preg_replace('/[^0-9]/', '', $request->business_phone), -10),
                 'is_active' => true,
             ]);
 
@@ -343,7 +343,10 @@ class RegisteredUserController extends Controller
                 ]);
             } else {
                 // Paid Plan Activated
-                $endsAt = $billingCycle === 'yearly' ? now()->addYear() : now()->addMonth();
+                $endsAt = $targetPlan->calculateEndsAt(now());
+                if ($billingCycle === 'yearly' && $targetPlan->duration_unit === 'days' && $targetPlan->duration_value == 30) {
+                    $endsAt = now()->addYearsNoOverflow(1);
+                }
 
                 \App\Models\OrganizationSubscription::create([
                     'organization_id' => $org->id,

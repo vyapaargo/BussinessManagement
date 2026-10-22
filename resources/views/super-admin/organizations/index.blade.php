@@ -15,6 +15,12 @@
 </div>
 @endif
 
+@if(session('error'))
+<div class="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-lg mb-6">
+    {{ session('error') }}
+</div>
+@endif
+
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
     <div class="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
         <form method="GET" action="{{ route('super-admin.organizations.index') }}" class="flex gap-4 w-full max-w-2xl">
@@ -80,6 +86,13 @@
                                     @else
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                     @endif
+                                </button>
+                            </form>
+                            <form action="{{ route('super-admin.organizations.destroy', $org) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete organization {{ $org->name }}? If financial records exist, it will be safely deactivated to protect audit history.');" class="inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="p-1.5 text-gray-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Delete / Deactivate Organization">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                 </button>
                             </form>
                         </div>

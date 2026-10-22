@@ -6,20 +6,25 @@
     <title>Receipt_{{ $invoice->invoice_number }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    @php
+        $paperSize = request('paper_size', '80mm');
+        $is58mm = in_array(strtolower($paperSize), ['58mm', '58', '2inch', '2']);
+    @endphp
     <style>
         @page {
-            size: 80mm auto;
+            size: {{ $is58mm ? '58mm auto' : '80mm auto' }};
             margin: 0;
         }
         body {
             font-family: 'Courier New', Courier, monospace, 'Helvetica Neue', Arial, sans-serif;
-            width: 78mm;
+            width: {{ $is58mm ? '54mm' : '78mm' }};
+            max-width: {{ $is58mm ? '54mm' : '78mm' }};
             margin: 0 auto;
-            padding: 8px 6px;
+            padding: {{ $is58mm ? '4px 3px' : '8px 6px' }};
             color: #000;
             background: #fff;
-            font-size: 11px;
-            line-height: 1.35;
+            font-size: {{ $is58mm ? '9.5px' : '11px' }};
+            line-height: {{ $is58mm ? '1.25' : '1.35' }};
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
         }
@@ -107,10 +112,14 @@
             <div style="font-size: 12px; font-weight: bold; text-align: center;">
                 Receipt Preview: <span style="font-family: monospace; color: #a5f3fc;">{{ $invoice->invoice_number }}</span>
             </div>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; align-items: center;">
                 <button onclick="window.print()" style="padding: 6px 12px; background: #4f46e5; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 11px; cursor: pointer; display: inline-flex; items-center; gap: 4px;">
                     🖨️ Print Receipt
                 </button>
+                <select onchange="localStorage.setItem('pos_printer_paper_size', this.value); window.location.search = '?paper_size=' + this.value" style="padding: 5px 8px; font-size: 11px; border-radius: 6px; border: none; background: #334155; color: white; font-weight: bold;">
+                    <option value="58mm" {{ $is58mm ? 'selected' : '' }}>58mm (2" Thermal)</option>
+                    <option value="80mm" {{ !$is58mm ? 'selected' : '' }}>80mm (3" Thermal)</option>
+                </select>
                 <a href="{{ route('organization.invoices.print', $invoice) }}" style="padding: 6px 12px; background: #334155; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 11px; cursor: pointer; text-decoration: none;">
                     📄 Standard A4 Tax Invoice
                 </a>
@@ -311,5 +320,15 @@
             @endif
         @endif
 
+    <script>
+    (function() {
+        const savedSize = localStorage.getItem('pos_printer_paper_size');
+        const urlParams = new URLSearchParams(window.location.search);
+        if (savedSize && !urlParams.has('paper_size')) {
+            urlParams.set('paper_size', savedSize);
+            window.location.search = urlParams.toString();
+        }
+    })();
+    </script>
 </body>
 </html>

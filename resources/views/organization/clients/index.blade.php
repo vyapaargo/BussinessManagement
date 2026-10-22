@@ -32,8 +32,8 @@
         <div class="flex items-center gap-3 shrink-0 flex-wrap lg:justify-end">
             <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-900 border border-slate-300 shadow-2xs">
                 <span class="text-slate-500 font-medium">Capacity:</span>
-                <span>{{ $totalClients ?? 0 }} / {{ is_numeric($maxClients) ? $maxClients : '∞' }}</span>
-                @if(($limitReached ?? false) && Route::has('organization.subscription.index'))
+                <span>{{ $totalClients ?? $clientsCount ?? 0 }} / {{ isset($maxClients) && is_numeric($maxClients) ? $maxClients : (isset($maxClientsAllowed) && is_numeric($maxClientsAllowed) ? $maxClientsAllowed : '∞') }}</span>
+                @if(($limitReached ?? $isClientLimitReached ?? false) && Route::has('organization.subscription.index'))
                     <span class="ml-1 text-rose-700 font-extrabold">(Limit Reached)</span>
                 @endif
             </div>

@@ -153,6 +153,7 @@ Route::middleware(['auth', 'role:Super Admin'])->prefix('super-admin')->name('su
     Route::patch('organizations/{organization}/toggle-status', [\App\Http\Controllers\SuperAdmin\OrganizationController::class, 'toggleStatus'])->name('organizations.toggle-status');
     
     Route::resource('plans', \App\Http\Controllers\SuperAdmin\PlanController::class);
+    Route::patch('plans/{plan}/toggle-status', [\App\Http\Controllers\SuperAdmin\PlanController::class, 'toggleStatus'])->name('plans.toggle-status');
     
     Route::resource('subscriptions', \App\Http\Controllers\SuperAdmin\SubscriptionController::class);
     

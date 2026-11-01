@@ -7,6 +7,11 @@
     <title>{{ $organization->name ?? 'Dine-In Menu' }}</title>
     <link rel="icon" type="image/png" href="{{ asset('images/logo-32.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/logo-180.png') }}">
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Vyapaargo">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -91,8 +96,13 @@
                 </div>
             </div>
             
-            <!-- Right: Table Badge -->
+            <!-- Right: Table Badge & Add to Home Screen -->
             <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" onclick="triggerAddToHomeScreen()" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-2xs" title="Add to Home Screen / Shortcut">
+                    <svg class="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                    <span class="hidden sm:inline">Add to Home</span>
+                    <span class="sm:hidden">Shortcut</span>
+                </button>
                 @php
                     $tableId = session('restaurant_table_id');
                     $tableObj = $tableId ? \App\Models\RestaurantTable::find($tableId) : null;
@@ -154,5 +164,6 @@
     @endif
 
 <x-required-asterisks />
+@include('layouts.partials.add-to-home-screen')
 </body>
 </html>

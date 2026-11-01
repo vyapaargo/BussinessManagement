@@ -26,6 +26,27 @@
         ::-webkit-scrollbar-track { background: #0b0f19; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    
+        /* Responsive Kanban Board for Tablets */
+        @media (max-width: 1023px) {
+            .kds-board {
+                scroll-snap-type: x mandatory !important;
+                -webkit-overflow-scrolling: touch !important;
+                padding-bottom: 16px !important;
+            }
+            .kds-col {
+                scroll-snap-align: start !important;
+                flex: 0 0 85% !important;
+                min-width: 290px !important;
+                max-width: 360px !important;
+            }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .kds-col {
+                flex: 0 0 calc(50% - 10px) !important;
+                min-width: 330px !important;
+            }
+        }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-slate-100 antialiased selection:bg-amber-500 selection:text-slate-950">
@@ -161,10 +182,10 @@
     </div>
 
     <!-- 3. Kanban Columns Board -->
-    <div class="flex-grow flex gap-4 p-4 overflow-x-auto overflow-y-hidden bg-[#060913]">
+    <div class="kds-board flex-grow flex gap-4 p-4 overflow-x-auto overflow-y-hidden bg-[#060913]">
         
         <!-- COLUMN 1: RECEIVED / PENDING -->
-        <div class="flex-1 min-w-[340px] max-w-[420px] bg-slate-950/80 rounded-xl flex flex-col border border-slate-800/90 overflow-hidden shadow-2xl">
+        <div class="kds-col flex-1 min-w-[340px] max-w-[420px] bg-slate-950/80 rounded-xl flex flex-col border border-slate-800/90 overflow-hidden shadow-2xl">
             <!-- Column Header -->
             <div class="bg-gradient-to-r from-amber-950/90 via-amber-900/40 to-slate-950 border-b border-amber-500/40 px-4 py-3 flex justify-between items-center shrink-0">
                 <div class="flex items-center gap-2">
@@ -184,7 +205,7 @@
         </div>
 
         <!-- COLUMN 2: PREPARING / COOKING -->
-        <div class="flex-1 min-w-[340px] max-w-[420px] bg-slate-950/80 rounded-xl flex flex-col border border-slate-800/90 overflow-hidden shadow-2xl">
+        <div class="kds-col flex-1 min-w-[340px] max-w-[420px] bg-slate-950/80 rounded-xl flex flex-col border border-slate-800/90 overflow-hidden shadow-2xl">
             <!-- Column Header -->
             <div class="bg-gradient-to-r from-indigo-950/90 via-indigo-900/40 to-slate-950 border-b border-indigo-500/40 px-4 py-3 flex justify-between items-center shrink-0">
                 <div class="flex items-center gap-2">
@@ -204,7 +225,7 @@
         </div>
 
         <!-- COLUMN 3: READY FOR PICKUP -->
-        <div class="flex-1 min-w-[340px] max-w-[420px] bg-slate-950/80 rounded-xl flex flex-col border border-slate-800/90 overflow-hidden shadow-2xl">
+        <div class="kds-col flex-1 min-w-[340px] max-w-[420px] bg-slate-950/80 rounded-xl flex flex-col border border-slate-800/90 overflow-hidden shadow-2xl">
             <!-- Column Header -->
             <div class="bg-gradient-to-r from-emerald-950/90 via-emerald-900/40 to-slate-950 border-b border-emerald-500/40 px-4 py-3 flex justify-between items-center shrink-0">
                 <div class="flex items-center gap-2">

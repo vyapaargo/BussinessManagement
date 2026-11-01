@@ -616,6 +616,21 @@
             background: #D99A2B;
             color: #FFFFFF;
         }
+    
+        @media (min-width: 600px) and (max-width: 1023px) {
+            .reg-feature-list {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 14px 20px !important;
+                margin-bottom: 20px !important;
+            }
+            .reg-showcase {
+                padding: 32px 36px !important;
+            }
+            .reg-subhead {
+                margin-bottom: 16px !important;
+            }
+        }
     </style>
 
     <div class="reg-wrapper" x-data="registrationApp()">

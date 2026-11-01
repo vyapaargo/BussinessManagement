@@ -177,7 +177,7 @@
                 </div>
 
                 <!-- Food Items Grid -->
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[420px] overflow-y-auto p-1 pr-2">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-h-[420px] overflow-y-auto p-1 pr-2">
                     @foreach($categories as $cat)
                         @foreach($cat->items as $item)
                             @php

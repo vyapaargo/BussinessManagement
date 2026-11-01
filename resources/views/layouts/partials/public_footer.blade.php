@@ -76,6 +76,12 @@
         <h4 style="font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 700; color: #FFFFFF; margin-bottom: 18px; letter-spacing: 0.02em;">Legal &amp; Company</h4>
         <ul style="list-style: none; padding: 0; margin: 0;">
           <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.pricing') }}">Pricing &amp; Plans</a></li>
+          <li style="margin-bottom: 11px; list-style: none;">
+            <a href="javascript:void(0)" onclick="triggerAddToHomeScreen()" style="color:#FBBF24; display:inline-flex; align-items:center; gap:6px; text-decoration:none;" title="Add shortcut to your mobile home screen">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+              <span>Add to Home Screen</span>
+            </a>
+          </li>
           <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.privacy') }}">Privacy Policy</a></li>
           <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.terms') }}">Terms &amp; Conditions</a></li>
           <li style="margin-bottom: 11px; list-style: none;"><a href="{{ route('public.pricing') }}#faq">Frequently Asked Questions</a></li>

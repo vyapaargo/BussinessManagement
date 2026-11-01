@@ -36,6 +36,10 @@
   <a href="{{ route('public.restaurant') }}">Restaurant</a>
   <a href="{{ route('public.payments') }}">Payments</a>
   <a href="{{ route('public.pricing') }}">Pricing</a>
+  <a href="javascript:void(0)" onclick="triggerAddToHomeScreen(); if (document.getElementById('mob-drawer')) document.getElementById('mob-drawer').classList.remove('open'); if (document.getElementById('mob-backdrop')) document.getElementById('mob-backdrop').classList.remove('open'); document.body.style.overflow='';" style="display:flex; align-items:center; gap:10px; color:var(--ink); font-weight:600; font-size:16px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--gold-deep); flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+    <span>Add to Home Screen</span>
+  </a>
   <div class="mob-cta">
     @auth
         <a class="btn btn-ghost" href="{{ route('dashboard') }}">See Dashboard</a>

@@ -7,6 +7,11 @@
     <title>Super Admin - {{ config('app.name', 'Vyapaargo') }}</title>
     <link rel="icon" type="image/png" href="{{ asset('images/logo-32.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/logo-180.png') }}">
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Vyapaargo">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -228,27 +233,36 @@
         input[class*="pl-10"], input.pl-10 { padding-left: 2.5rem !important; }
         input[class*="pl-12"], input.pl-12 { padding-left: 3rem !important; }
 
-        /* Explicit Sidebar Collapse Rules */
-        .sidebar-expanded { width: 16rem !important; }
-        .sidebar-collapsed { width: 4.5rem !important; }
+        /* Explicit Sidebar Collapse Rules for Large Tablet Landscape & Desktop (>= 1024px) */
+        @media (min-width: 1024px) {
+            .desktop-sidebar, .sidebar-expanded { display: flex !important; width: 16rem !important; position: fixed !important; top: 0 !important; bottom: 0 !important; left: 0 !important; z-index: 30 !important; }
+            .desktop-sidebar.sidebar-collapsed, .sidebar-collapsed { display: flex !important; width: 4.5rem !important; position: fixed !important; top: 0 !important; bottom: 0 !important; left: 0 !important; z-index: 30 !important; }
 
-        .main-expanded { padding-left: 16rem !important; }
-        .main-collapsed { padding-left: 4.5rem !important; }
+            .main-container, .main-expanded { padding-left: 16rem !important; }
+            .main-container.main-collapsed, .main-collapsed { padding-left: 4.5rem !important; }
 
-        /* Pre-render instant CSS sync to prevent page layout shift on navigation */
-        html.sidebar-is-collapsed .sidebar-expanded { width: 4.5rem !important; }
-        html.sidebar-is-collapsed .main-expanded { padding-left: 4.5rem !important; }
+            html.sidebar-is-collapsed .desktop-sidebar, html.sidebar-is-collapsed .sidebar-expanded { width: 4.5rem !important; }
+            html.sidebar-is-collapsed .main-container, html.sidebar-is-collapsed .main-expanded { padding-left: 4.5rem !important; }
 
-        @media (min-width: 768px) {
-            .sidebar-expanded, .sidebar-collapsed {
-                display: flex !important;
+            .mobile-open-btn { display: none !important; }
+            .mobile-offcanvas-drawer { display: none !important; }
+        }
+
+        /* Mobile & Tablet Portrait (< 1024px): Off-canvas navigation, zero main left padding */
+        @media (max-width: 1023px) {
+            .desktop-sidebar, .sidebar-expanded, .sidebar-collapsed, html.sidebar-is-collapsed .desktop-sidebar, html.sidebar-is-collapsed .sidebar-expanded { display: none !important; }
+            .main-container, .main-expanded, .main-collapsed, html.sidebar-is-collapsed .main-container, html.sidebar-is-collapsed .main-expanded { padding-left: 0 !important; }
+            .mobile-open-btn { display: flex !important; }
+        }
+
+        /* Scoped Tablet Optimizations (600px - 1199px) */
+        @media screen and (min-width: 600px) and (max-width: 1199px) {
+            .table-responsive, [class*="overflow-x-auto"] {
+                -webkit-overflow-scrolling: touch;
             }
         }
 
-        @media (max-width: 768px) {
-            .main-expanded, .main-collapsed, html.sidebar-is-collapsed .main-expanded { padding-left: 0 !important; }
-            .sidebar-expanded, .sidebar-collapsed, html.sidebar-is-collapsed .sidebar-expanded { width: 16rem !important; }
-        }
+        [x-cloak] { display: none !important; }
     </style>
 
     <script>
@@ -264,7 +278,7 @@
 
 
     <!-- Mobile sidebar -->
-    <div x-show="sidebarOpen" class="relative z-40 md:hidden" role="dialog" aria-modal="true" style="display: none;">
+    <div x-show="sidebarOpen" x-cloak class="mobile-offcanvas-drawer relative z-40 lg:hidden" role="dialog" aria-modal="true" style="display: none;">
         <div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="fixed inset-0 bg-gray-600 bg-opacity-75"></div>
         <div class="fixed inset-0 z-40 flex">
             <div x-show="sidebarOpen" x-transition:enter="transition ease-in-out duration-300 transform" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" class="relative flex w-full max-w-xs flex-1 flex-col pt-5 pb-4" style="background-color: var(--theme-bg);">
@@ -300,7 +314,7 @@
     </div>
 
     <!-- Static sidebar -->
-    <div :class="sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'" class="sidebar-expanded md:w-64 hidden md:flex md:fixed md:inset-y-0 md:flex-col transition-all duration-300 z-30">
+    <div :class="sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'" class="desktop-sidebar sidebar-expanded lg:w-64 hidden lg:flex lg:fixed lg:inset-y-0 lg:flex-col transition-all duration-300 z-30">
         <div class="flex min-h-0 flex-1 flex-col" style="background-color: var(--theme-bg);">
             <div class="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
                 <div class="flex flex-shrink-0 items-center justify-between px-4 mb-3">
@@ -347,9 +361,9 @@
     </div>
 
     <!-- Main Container -->
-    <div :class="sidebarCollapsed ? 'main-collapsed' : 'main-expanded'" class="main-expanded md:pl-64 flex flex-1 flex-col transition-all duration-300">
+    <div :class="sidebarCollapsed ? 'main-collapsed' : 'main-expanded'" class="main-container main-expanded lg:pl-64 flex flex-1 flex-col transition-all duration-300">
         <div class="sticky top-0 z-10 flex h-16 flex-shrink-0 bg-white shadow">
-            <button type="button" @click="sidebarOpen = true" class="border-r border-gray-200 px-4 text-gray-500 md:hidden">
+            <button type="button" @click="sidebarOpen = true" class="mobile-open-btn border-r border-gray-200 px-4 text-gray-500 lg:hidden">
                 <span class="sr-only">Open sidebar</span>
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
             </button>
@@ -423,5 +437,6 @@
     </div>
     @stack('scripts')
 <x-required-asterisks />
+@include('layouts.partials.add-to-home-screen')
 </body>
 </html>

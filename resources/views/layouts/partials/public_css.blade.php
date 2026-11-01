@@ -674,4 +674,74 @@
       align-items: flex-start !important;
     }
   }
+
+  /* ==========================================================================
+     TABLET RESPONSIVENESS ENHANCEMENTS (600px - 1199px)
+     Preserves Mobile (<600px) and Desktop (>=1200px) exactly as designed.
+     ========================================================================== */
+  @media screen and (min-width: 600px) and (max-width: 1199px) {
+    .wrap {
+      padding: 0 24px !important;
+    }
+    .hero h1 {
+      font-size: clamp(34px, 4.2vw, 46px) !important;
+      line-height: 1.14 !important;
+    }
+    .grid-2-cards {
+      gap: 20px !important;
+    }
+    .feat-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 18px !important;
+    }
+  }
+
+  @media screen and (min-width: 600px) and (max-width: 767px) {
+    .grid-2-cards {
+      grid-template-columns: 1fr !important;
+      max-width: 540px !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+  }
+
+  @media screen and (min-width: 680px) and (max-width: 1023px) {
+    .plans, .addon-plans {
+      padding: 20px 8px 32px !important;
+      justify-content: flex-start;
+    }
+    .plan-card, .addon-card {
+      flex: 0 0 calc(50% - 12px) !important;
+      max-width: 380px !important;
+      min-width: 290px !important;
+    }
+    .reviews-slider .feat-card {
+      flex: 0 0 calc(50% - 12px) !important;
+      max-width: 380px !important;
+    }
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 18px !important;
+    }
+    .footer-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 32px !important;
+    }
+  }
+
+  @media screen and (min-width: 1024px) and (max-width: 1199px) {
+    .hero-grid {
+      gap: 24px !important;
+    }
+    .hero h1 {
+      font-size: 44px !important;
+    }
+    .nav-links {
+      gap: 20px !important;
+    }
+    .footer-grid {
+      grid-template-columns: 1.3fr 1fr 1fr 1.1fr !important;
+      gap: 24px !important;
+    }
+  }
 </style>

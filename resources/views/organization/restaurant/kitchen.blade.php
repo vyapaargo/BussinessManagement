@@ -117,13 +117,17 @@
             <!-- POS Quick Links -->
             <div class="h-4 w-px bg-slate-800 mx-1"></div>
 
+            @if(auth()->user()->hasRole('Organization Admin') || auth()->user()->hasPermissionTo('restaurant.counter'))
             <a href="{{ route('organization.menu.counter.index') }}" class="hidden sm:flex items-center gap-1 text-slate-400 hover:text-amber-400 px-2 py-1 transition font-bold text-xs">
                 ⚡ Counter POS
             </a>
+            @endif
+            @if(auth()->user()->hasRole('Organization Admin') || auth()->user()->hasPermissionTo('restaurant.view'))
             <a href="{{ route('organization.menu.pos.index') }}" class="hidden sm:flex items-center gap-1 text-slate-400 hover:text-indigo-400 px-2 py-1 transition font-bold text-xs">
                 🪑 Waiter POS
             </a>
-            <a href="{{ route('organization.dashboard') }}" class="bg-slate-900 hover:bg-rose-950/60 hover:text-rose-300 text-slate-400 border border-slate-800 hover:border-rose-700/50 px-2.5 py-1.5 rounded-xl transition font-bold text-xs flex items-center gap-1">
+            @endif
+            <a href="{{ route('dashboard') }}" class="bg-slate-900 hover:bg-rose-950/60 hover:text-rose-300 text-slate-400 border border-slate-800 hover:border-rose-700/50 px-2.5 py-1.5 rounded-xl transition font-bold text-xs flex items-center gap-1">
                 ✕ Exit
             </a>
         </div>

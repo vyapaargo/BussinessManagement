@@ -111,46 +111,46 @@
 @endif
 
 @if($feature('module_restaurant'))
-    @if($can('restaurant.view'))
+    @if($isAdmin || $can('restaurant.view') || $can('restaurant.menu') || $can('restaurant.tables') || $can('restaurant.orders') || $can('restaurant.kitchen') || $can('restaurant.counter') || $can('restaurant.reports'))
         <div x-show="typeof sidebarCollapsed === 'undefined' || !sidebarCollapsed" class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Restaurant</div>
     @endif
     
-    @if($can('restaurant.menu') || $can('restaurant.tables'))
-        <x-sidebar-item route="{{ route('organization.menu.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>' :active="request()->routeIs('organization.menu.index')">
+    @if($isAdmin || $can('restaurant.menu'))
+        <x-sidebar-item route="{{ route('organization.menu.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>' :active="request()->routeIs('organization.menu.index')">
             Menu Builder
         </x-sidebar-item>
+    @endif
+
+    @if($isAdmin || $can('restaurant.tables'))
         <x-sidebar-item route="{{ route('organization.menu.tables.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>' :active="request()->routeIs('organization.menu.tables.*')">
             Tables & QR
         </x-sidebar-item>
     @endif
     
-    @if($isAdmin || $can('restaurant.view') || $can('restaurant.orders') || $can('restaurant.menu') || $can('restaurant.tables') || $can('restaurant.kitchen') || $can('restaurant.counter'))
-        @if($isAdmin || $can('restaurant.view'))
-            <x-sidebar-item route="{{ route('organization.menu.pos.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' :active="request()->routeIs('organization.menu.pos.*')">
-                Waiter POS & Billing
-            </x-sidebar-item>
-        @endif
-        
-        @if($isAdmin || $can('restaurant.counter'))
-            <x-sidebar-item route="{{ route('organization.menu.counter.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>' :active="request()->routeIs('organization.menu.counter.*')">
-                Counter Billing
-            </x-sidebar-item>
-        @endif
-        
-        @if($isAdmin || $can('restaurant.kitchen'))
-            <x-sidebar-item route="{{ route('organization.menu.kitchen.index') }}" target="_blank" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>' :active="request()->routeIs('organization.menu.kitchen.index')">
-                Kitchen Display
-            </x-sidebar-item>
-        @endif
-        
-        @if($isAdmin || $can('restaurant.reports'))
-            <x-sidebar-item route="{{ route('organization.menu.reports.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>' :active="request()->routeIs('organization.menu.reports.*')">
-                Restro Sales & Analytics
-            </x-sidebar-item>
-        @endif
+    @if($isAdmin || $can('restaurant.view'))
+        <x-sidebar-item route="{{ route('organization.menu.pos.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' :active="request()->routeIs('organization.menu.pos.*')">
+            Waiter POS & Billing
+        </x-sidebar-item>
+    @endif
+    
+    @if($isAdmin || $can('restaurant.counter'))
+        <x-sidebar-item route="{{ route('organization.menu.counter.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>' :active="request()->routeIs('organization.menu.counter.*')">
+            Counter Billing
+        </x-sidebar-item>
+    @endif
+    
+    @if($isAdmin || $can('restaurant.kitchen'))
+        <x-sidebar-item route="{{ route('organization.menu.kitchen.index') }}" target="_blank" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>' :active="request()->routeIs('organization.menu.kitchen.index')">
+            Kitchen Display
+        </x-sidebar-item>
+    @endif
+    
+    @if($isAdmin || $can('restaurant.reports'))
+        <x-sidebar-item route="{{ route('organization.menu.reports.index') }}" icon='<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>' :active="request()->routeIs('organization.menu.reports.*')">
+            Restro Sales & Analytics
+        </x-sidebar-item>
     @endif
 @endif
-
 <!-- System -->
 @if($isAdmin)
     <div x-show="typeof sidebarCollapsed === 'undefined' || !sidebarCollapsed" class="mt-4 mb-2 px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">System</div>

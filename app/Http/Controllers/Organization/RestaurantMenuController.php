@@ -12,10 +12,10 @@ class RestaurantMenuController extends Controller
     public function index()
     {
         $orgId = auth()->user()->organization_id;
-        $locationId = session('active_location_id');
+        $locationId = session('active_location_id') ?? \App\Services\LocationManager::getActiveLocationId();
 
         if (!$locationId) {
-            return redirect()->route('organization.dashboard')->with('error', 'Please select a location to manage the menu.');
+            return redirect()->route('dashboard')->with('error', 'Please select a location to manage the menu.');
         }
 
         $categories = MenuCategory::with(['items' => function($q) {

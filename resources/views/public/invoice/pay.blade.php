@@ -11,25 +11,25 @@
 <div class="max-w-3xl mx-auto">
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         
-        <div class="p-8 border-b border-gray-100 bg-gray-900 text-white flex justify-between items-center">
+        <div class="p-4 sm:p-6 md:p-8 border-b border-gray-100 bg-gray-900 text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
-                <h1 class="text-2xl font-bold">{{ $invoice->organization->name }}</h1>
+                <h1 class="text-xl sm:text-2xl font-bold">{{ $invoice->organization->name }}</h1>
                 <p class="text-gray-400 text-sm">{{ $invoice->location->name ?? 'HQ' }}</p>
             </div>
-            <div class="text-right">
-                <div class="text-xl font-black">INVOICE</div>
+            <div class="text-left sm:text-right">
+                <div class="text-lg sm:text-xl font-black">INVOICE</div>
                 <div class="text-gray-400 text-sm">#{{ $invoice->invoice_number }}</div>
             </div>
         </div>
 
-        <div class="p-8 grid grid-cols-2 gap-8 border-b border-gray-100">
+        <div class="p-4 sm:p-6 md:p-8 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 border-b border-gray-100">
             <div>
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Billed To</h3>
                 <p class="font-bold text-gray-900 text-lg">{{ $invoice->client->name ?? 'Walk-in Customer' }}</p>
                 @if(optional($invoice->client)->email)<p class="text-gray-600 text-sm">{{ $invoice->client->email }}</p>@endif
                 @if(optional($invoice->client)->phone)<p class="text-gray-600 text-sm">{{ $invoice->client->phone }}</p>@endif
             </div>
-            <div class="text-right">
+            <div class="text-left sm:text-right">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Payment Details</h3>
                 <p class="text-sm text-gray-600">Date: <span class="font-medium text-gray-900">{{ $invoice->invoice_date->format('M d, Y') }}</span></p>
                 <p class="text-sm text-gray-600">Due: <span class="font-medium text-gray-900">{{ $invoice->due_date ? $invoice->due_date->format('M d, Y') : '-' }}</span></p>
@@ -45,31 +45,33 @@
             </div>
         </div>
 
-        <div class="p-8">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="border-b border-gray-200">
-                        <th class="py-3 text-xs font-bold text-gray-400 uppercase">Item</th>
-                        <th class="py-3 text-xs font-bold text-gray-400 uppercase text-right">Qty</th>
-                        <th class="py-3 text-xs font-bold text-gray-400 uppercase text-right">Price</th>
-                        <th class="py-3 text-xs font-bold text-gray-400 uppercase text-right">Total</th>
-                    </tr>
-                </thead>
-                <tbody class="text-sm">
-                    @foreach($invoice->items as $item)
-                    <tr class="border-b border-gray-100">
-                        <td class="py-4 font-medium text-gray-900">{{ $item->product_name_snapshot }}</td>
-                        <td class="py-4 text-right text-gray-600">{{ $item->quantity }}</td>
-                        <td class="py-4 text-right text-gray-600">₹{{ number_format($item->unit_price, 2) }}</td>
-                        <td class="py-4 text-right font-medium text-gray-900">₹{{ number_format($item->total, 2) }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+        <div class="p-4 sm:p-6 md:p-8">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[420px] sm:min-w-0">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="py-3 text-xs font-bold text-gray-400 uppercase">Item</th>
+                            <th class="py-3 text-xs font-bold text-gray-400 uppercase text-right">Qty</th>
+                            <th class="py-3 text-xs font-bold text-gray-400 uppercase text-right">Price</th>
+                            <th class="py-3 text-xs font-bold text-gray-400 uppercase text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        @foreach($invoice->items as $item)
+                        <tr class="border-b border-gray-100">
+                            <td class="py-4 font-medium text-gray-900">{{ $item->product_name_snapshot }}</td>
+                            <td class="py-4 text-right text-gray-600">{{ $item->quantity }}</td>
+                            <td class="py-4 text-right text-gray-600">₹{{ number_format($item->unit_price, 2) }}</td>
+                            <td class="py-4 text-right font-medium text-gray-900">₹{{ number_format($item->total, 2) }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="p-8 bg-gray-50 flex justify-end">
-            <div class="w-64 space-y-3 text-sm">
+        <div class="p-4 sm:p-6 md:p-8 bg-gray-50 flex justify-end">
+            <div class="w-full sm:w-64 space-y-3 text-sm">
                 <div class="flex justify-between text-gray-600">
                     <span>Subtotal</span>
                     <span>₹{{ number_format($invoice->subtotal, 2) }}</span>
@@ -102,7 +104,7 @@
         </div>
         
         @if($invoice->amount_due > 0 && $invoice->status !== 'Cancelled')
-        <div class="p-8 bg-indigo-50/70 border-t border-indigo-100 text-center space-y-6">
+        <div class="p-4 sm:p-6 md:p-8 bg-indigo-50/70 border-t border-indigo-100 text-center space-y-6">
             <div>
                 <h2 class="text-xl font-extrabold text-indigo-950 mb-1">Pay Outstanding Invoice</h2>
                 <p class="text-indigo-700 text-xs font-medium">Scan QR code using any UPI App or click to pay online.</p>

@@ -14,7 +14,7 @@
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div class="min-w-0 flex-1">
             <nav class="flex items-center gap-2 text-xs font-semibold text-slate-600 mb-2" aria-label="Breadcrumb">
-                <a href="{{ route('organization.dashboard') }}" class="hover:text-slate-900 transition-colors">Dashboard</a>
+                <a href="{{ route('dashboard') }}" class="hover:text-slate-900 transition-colors">Dashboard</a>
                 <span class="text-slate-400 font-bold">/</span>
                 <a href="{{ route('organization.menu.index') }}" class="hover:text-slate-900 transition-colors">Restaurant</a>
                 <span class="text-slate-400 font-bold">/</span>

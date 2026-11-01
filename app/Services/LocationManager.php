@@ -24,17 +24,32 @@ class LocationManager
                 if ($user->hasRole('Organization Admin') || $user->hasRole('Super Admin')) {
                     $firstLocation = Location::where('organization_id', $user->organization_id)
                         ->where('is_active', true)
-                        ->first();
+                        ->first() 
+                        ?? Location::where('organization_id', $user->organization_id)->first();
                 } else {
                     // For employees, restrict to assigned locations in user_locations or employee profile
-                    $firstLocation = $user->locations()->where('is_active', true)->first();
+                    $firstLocation = $user->locations()->where('is_active', true)->first()
+                        ?? $user->locations()->first();
                     
                     if (!$firstLocation && $user->employee && $user->employee->location_id) {
                         $firstLocation = Location::where('id', $user->employee->location_id)
                             ->where('is_active', true)
-                            ->first();
+                            ->first()
+                            ?? Location::find($user->employee->location_id);
                         
                         // Automatically attach to user_locations for future checks
+                        if ($firstLocation) {
+                            $user->locations()->syncWithoutDetaching([$firstLocation->id]);
+                        }
+                    }
+
+                    // Fallback: If no assigned location, default to the organization's location
+                    if (!$firstLocation) {
+                        $firstLocation = Location::where('organization_id', $user->organization_id)
+                            ->where('is_active', true)
+                            ->first() 
+                            ?? Location::where('organization_id', $user->organization_id)->first();
+                        
                         if ($firstLocation) {
                             $user->locations()->syncWithoutDetaching([$firstLocation->id]);
                         }

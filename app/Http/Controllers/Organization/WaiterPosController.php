@@ -23,7 +23,7 @@ class WaiterPosController extends Controller
         $locationId = LocationManager::getActiveLocationId();
 
         if (!$locationId) {
-            return redirect()->route('organization.dashboard')->with('error', 'Please select a location to access Waiter POS.');
+            return redirect()->route('dashboard')->with('error', 'Please select a location to access Waiter POS.');
         }
 
         // Fetch tables with active pending orders

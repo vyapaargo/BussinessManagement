@@ -125,16 +125,49 @@ Route::get('/dashboard', function () {
         return redirect()->route('organization.dashboard'); 
     }
     
-    // Smart fallback for specialized staff without explicit dashboard.view permission
-    if ($user->hasPermissionTo('restaurant.view')) {
-        return redirect()->route('organization.menu.kitchen.index');
-    } elseif ($user->hasPermissionTo('invoices.view')) {
-        return redirect()->route('organization.invoices.index');
-    } elseif ($user->hasPermissionTo('inventory.view')) {
-        return redirect()->route('organization.inventory.index');
+    // Smart role-based fallback for staff members without explicit dashboard.view permission
+    if ($user->organization_id) {
+        // Restaurant Module Priority: Kitchen staff to KDS, Waiter/Floor staff to POS, Counter staff to Counter
+        if ($user->hasPermissionTo('restaurant.kitchen')) {
+            return redirect()->route('organization.menu.kitchen.index');
+        } elseif ($user->hasPermissionTo('restaurant.view')) {
+            return redirect()->route('organization.menu.pos.index');
+        } elseif ($user->hasPermissionTo('restaurant.counter')) {
+            return redirect()->route('organization.menu.counter.index');
+        } elseif ($user->hasPermissionTo('restaurant.menu')) {
+            return redirect()->route('organization.menu.index');
+        } elseif ($user->hasPermissionTo('restaurant.tables')) {
+            return redirect()->route('organization.menu.tables.index');
+        } elseif ($user->hasPermissionTo('restaurant.reports')) {
+            return redirect()->route('organization.menu.reports.index');
+        }
+
+        // Retail & Billing Priority
+        if ($user->hasPermissionTo('invoices.view')) {
+            return redirect()->route('organization.invoices.index');
+        } elseif ($user->hasPermissionTo('products.view')) {
+            return redirect()->route('organization.products.index');
+        } elseif ($user->hasPermissionTo('inventory.view')) {
+            return redirect()->route('organization.inventory.index');
+        } elseif ($user->hasPermissionTo('clients.view')) {
+            return redirect()->route('organization.clients.index');
+        }
+
+        // HR & Operations Priority
+        if ($user->hasPermissionTo('attendance.view')) {
+            return redirect()->route('organization.attendance.index');
+        } elseif ($user->hasPermissionTo('payroll.view')) {
+            return redirect()->route('organization.payroll.index');
+        } elseif ($user->hasPermissionTo('complaints.view')) {
+            return redirect()->route('organization.complaints.index');
+        } elseif ($user->hasPermissionTo('employees.view')) {
+            return redirect()->route('organization.employees.index');
+        } elseif ($user->hasPermissionTo('roles.view')) {
+            return redirect()->route('organization.roles.index');
+        }
     }
 
-    return view('dashboard');
+    return redirect()->route('profile.edit');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 

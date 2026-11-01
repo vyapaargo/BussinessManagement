@@ -1,12 +1,12 @@
 @extends('layouts.super-admin')
 
 @section('content')
-<div class="mb-8 flex justify-between items-end">
+<div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
     <div>
         <h1 class="text-2xl font-bold text-gray-900">Organizations</h1>
         <p class="text-gray-500 mt-1">Manage all tenant businesses on the platform.</p>
     </div>
-    <a href="{{ route('super-admin.organizations.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium text-sm hover:bg-indigo-700 transition">+ New Organization</a>
+    <a href="{{ route('super-admin.organizations.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium text-sm hover:bg-indigo-700 transition shrink-0">+ New Organization</a>
 </div>
 
 @if(session('success'))
@@ -22,32 +22,34 @@
 @endif
 
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-    <div class="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-        <form method="GET" action="{{ route('super-admin.organizations.index') }}" class="flex gap-4 w-full max-w-2xl">
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name or email..." class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-full md:w-64 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+    <div class="p-4 border-b border-gray-100 bg-gray-50 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+        <form method="GET" action="{{ route('super-admin.organizations.index') }}" class="flex flex-col sm:flex-row gap-3 w-full max-w-2xl items-stretch sm:items-center">
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by name or email..." class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-full sm:w-64 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
             
-            <select name="status" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+            <select name="status" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-full sm:w-auto">
                 <option value="">All Statuses</option>
                 <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
                 <option value="inactive" {{ request('status') === 'inactive' ? 'selected' : '' }}>Inactive</option>
             </select>
             
-            <button type="submit" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-50 transition">Filter</button>
-            @if(request()->hasAny(['search', 'status']))
-                <a href="{{ route('super-admin.organizations.index') }}" class="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm flex items-center">Clear</a>
-            @endif
+            <div class="flex items-center gap-2">
+                <button type="submit" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-50 transition">Filter</button>
+                @if(request()->hasAny(['search', 'status']))
+                    <a href="{{ route('super-admin.organizations.index') }}" class="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm flex items-center">Clear</a>
+                @endif
+            </div>
         </form>
     </div>
     
     <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm text-gray-600">
+        <table class="w-full text-left text-sm text-gray-600 min-w-[650px] sm:min-w-full">
             <thead class="bg-white text-xs uppercase text-gray-400 font-semibold border-b border-gray-100 tracking-wider">
                 <tr>
-                    <th class="px-6 py-4">Organization</th>
-                    <th class="px-6 py-4">Contact</th>
-                    <th class="px-6 py-4">Status</th>
-                    <th class="px-6 py-4">Joined</th>
-                    <th class="px-6 py-4 text-right">Actions</th>
+                    <th class="px-4 sm:px-6 py-3 sm:py-4">Organization</th>
+                    <th class="px-4 sm:px-6 py-3 sm:py-4">Contact</th>
+                    <th class="px-4 sm:px-6 py-3 sm:py-4">Status</th>
+                    <th class="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">Joined</th>
+                    <th class="px-4 sm:px-6 py-3 sm:py-4 text-right whitespace-nowrap">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-50">

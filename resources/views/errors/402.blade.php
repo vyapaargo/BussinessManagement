@@ -10,7 +10,7 @@
         <a href="{{ route('organization.subscription.index') }}" class="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-6 py-3 rounded-xl transition shadow-lg text-sm">
             Upgrade Subscription &rarr;
         </a>
-        <a href="{{ route('organization.dashboard') }}" class="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white font-semibold px-6 py-3 rounded-xl transition text-sm">
+        <a href="{{ route('dashboard') }}" class="w-full sm:w-auto bg-slate-700 hover:bg-slate-600 text-white font-semibold px-6 py-3 rounded-xl transition text-sm">
             Go to Dashboard
         </a>
     @else

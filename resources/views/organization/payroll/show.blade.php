@@ -257,15 +257,15 @@
         </div>
 
         <!-- Printable Footer Signatures -->
-        <div class="grid grid-cols-2 gap-8 pt-10 border-t border-slate-200 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 pt-10 border-t border-slate-200 text-xs">
             <div>
-                <div class="border-t border-slate-400 w-48 pt-1 text-slate-700 font-bold">
+                <div class="border-t border-slate-400 w-full sm:w-48 pt-1 text-slate-700 font-bold">
                     Employee Signature
                 </div>
                 <div class="text-[10px] text-slate-500 mt-0.5">Date of Receipt</div>
             </div>
-            <div class="text-right">
-                <div class="border-t border-slate-400 w-48 ml-auto pt-1 text-slate-700 font-bold">
+            <div class="text-left sm:text-right">
+                <div class="border-t border-slate-400 w-full sm:w-48 sm:ml-auto pt-1 text-slate-700 font-bold">
                     Authorized Signatory
                 </div>
                 <div class="text-[10px] text-slate-500 mt-0.5">{{ $orgName }}</div>

@@ -387,10 +387,31 @@
         .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
         .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 
+        /* Universal Responsive Table & Form Rules (Mobile, Tablet, Laptop) */
+        .table-responsive, [class*="overflow-x-auto"], .overflow-x-auto {
+            -webkit-overflow-scrolling: touch !important;
+            max-width: 100% !important;
+        }
+
+        @media (max-width: 639px) {
+            .overflow-x-auto > table:not(.no-min-w) {
+                min-width: max(100%, 560px);
+            }
+            .overflow-x-auto > table th,
+            .overflow-x-auto > table td {
+                padding-left: 0.65rem !important;
+                padding-right: 0.65rem !important;
+            }
+            .dash-content .flex.justify-between:not(.no-wrap-mobile),
+            .dash-content form.flex:not(.no-wrap-mobile) {
+                flex-wrap: wrap !important;
+            }
+        }
+
         /* Scoped Tablet Optimizations (600px - 1199px) */
         @media screen and (min-width: 600px) and (max-width: 1199px) {
-            .table-responsive, [class*="overflow-x-auto"] {
-                -webkit-overflow-scrolling: touch;
+            .overflow-x-auto > table:not(.no-min-w) {
+                min-width: max(100%, 640px);
             }
         }
 

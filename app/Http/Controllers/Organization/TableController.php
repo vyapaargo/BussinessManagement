@@ -12,10 +12,10 @@ class TableController extends Controller
     public function index()
     {
         $orgId = auth()->user()->organization_id;
-        $locationId = session('active_location_id');
+        $locationId = session('active_location_id') ?? \App\Services\LocationManager::getActiveLocationId();
 
         if (!$locationId) {
-            return redirect()->route('organization.dashboard')->with('error', 'Please select a location.');
+            return redirect()->route('dashboard')->with('error', 'Please select a location.');
         }
 
         $tables = RestaurantTable::where('organization_id', $orgId)
@@ -28,7 +28,7 @@ class TableController extends Controller
     public function store(Request $request)
     {
         $orgId = auth()->user()->organization_id;
-        $locationId = session('active_location_id');
+        $locationId = session('active_location_id') ?? \App\Services\LocationManager::getActiveLocationId();
 
         if (!$locationId) {
             return back()->with('error', 'Please select a location first.');
@@ -66,7 +66,7 @@ class TableController extends Controller
     public function update(Request $request, RestaurantTable $table)
     {
         $orgId = auth()->user()->organization_id;
-        $locationId = session('active_location_id');
+        $locationId = session('active_location_id') ?? \App\Services\LocationManager::getActiveLocationId();
 
         $request->validate([
             'name' => [

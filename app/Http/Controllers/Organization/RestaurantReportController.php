@@ -28,7 +28,7 @@ class RestaurantReportController extends Controller
                 session(['active_location_id' => $firstLoc->id]);
                 $locationId = $firstLoc->id;
             } else {
-                return redirect()->route('organization.dashboard')->with('error', 'Please select a location to view reports.');
+                return redirect()->route('dashboard')->with('error', 'Please select a location to view reports.');
             }
         }
 

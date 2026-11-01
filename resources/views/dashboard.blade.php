@@ -57,6 +57,21 @@
   .quick-card:hover{border-color:var(--gold); border-style:solid;}
   .quick-card svg{width:20px; height:20px; margin:0 auto 10px; stroke:var(--ink);}
   .quick-card .t{font-size:12.5px; font-weight:600;}
+
+  /* Responsive Mobile & Tablet Rules */
+  @media (max-width: 639px) {
+    .dash-head { flex-direction: column; align-items: flex-start; gap: 14px; }
+    .stat-row { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr !important; }
+    .quick-grid { grid-template-columns: repeat(2, 1fr); }
+    .health-gauge { flex-direction: column; align-items: flex-start; gap: 14px; }
+    table.inv-table { min-width: 440px; }
+  }
+  @media (min-width: 640px) and (max-width: 1023px) {
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr !important; }
+    .quick-grid { grid-template-columns: repeat(2, 1fr); }
+  }
 </style>
 @endpush
 
@@ -91,17 +106,19 @@
   </div>
 </div>
 
-<div class="grid-2" style="grid-template-columns: 1.4fr 1fr;">
+<div class="grid-2">
   <div class="panel">
     <div class="panel-head"><h3>Recent Invoices</h3><a>View all</a></div>
-    <table class="inv-table">
-      <thead>
-        <tr><th>Invoice</th><th>Client</th><th>Amount</th><th>Status</th></tr>
-      </thead>
-      <tbody>
-        <tr><td colspan="4" style="text-align:center; padding: 20px; color: var(--ink-faint);">No invoices found</td></tr>
-      </tbody>
-    </table>
+    <div class="overflow-x-auto">
+      <table class="inv-table">
+        <thead>
+          <tr><th>Invoice</th><th>Client</th><th>Amount</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="4" style="text-align:center; padding: 20px; color: var(--ink-faint);">No invoices found</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
   <div class="panel">
     <div class="panel-head"><h3>Business Health Meter</h3></div>

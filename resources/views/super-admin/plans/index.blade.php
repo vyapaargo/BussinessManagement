@@ -1,14 +1,14 @@
 @extends('layouts.super-admin')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center mb-6">
+<div class="py-6 sm:py-12">
+    <div class="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
-                <h2 class="text-2xl font-semibold text-gray-800">Manage Subscription Plans</h2>
+                <h2 class="text-xl sm:text-2xl font-semibold text-gray-800">Manage Subscription Plans</h2>
                 <p class="text-xs text-gray-500 mt-1">Configure flexible duration plans (Days, Months, Years) and module features.</p>
             </div>
-            <a href="{{ route('super-admin.plans.create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow hover:bg-indigo-700 transition">+ Add Plan</a>
+            <a href="{{ route('super-admin.plans.create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow hover:bg-indigo-700 transition shrink-0">+ Add Plan</a>
         </div>
 
         @if(session('success'))
@@ -24,19 +24,20 @@
         @endif
 
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-2xl border border-gray-100">
-            <div class="p-6 text-gray-900">
-                <table class="w-full text-left text-sm border-collapse">
-                    <thead class="bg-gray-50/80">
-                        <tr>
-                            <th class="p-3 border-b text-xs font-bold text-gray-600 uppercase">Plan Name</th>
-                            <th class="p-3 border-b text-xs font-bold text-gray-600 uppercase">Duration</th>
-                            <th class="p-3 border-b text-xs font-bold text-gray-600 uppercase">Price</th>
-                            <th class="p-3 border-b text-xs font-bold text-gray-600 uppercase">Type / Target</th>
-                            <th class="p-3 border-b text-xs font-bold text-gray-600 uppercase">Features</th>
-                            <th class="p-3 border-b text-xs font-bold text-gray-600 uppercase">Status</th>
-                            <th class="p-3 border-b text-right text-xs font-bold text-gray-600 uppercase">Actions</th>
-                        </tr>
-                    </thead>
+            <div class="p-4 sm:p-6 text-gray-900">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm border-collapse min-w-[700px] sm:min-w-full">
+                        <thead class="bg-gray-50/80">
+                            <tr>
+                                <th class="p-3 border-b text-xs font-bold text-gray-600 uppercase whitespace-nowrap">Plan Name</th>
+                                <th class="p-3 border-b text-xs font-bold text-gray-600 uppercase whitespace-nowrap">Duration</th>
+                                <th class="p-3 border-b text-xs font-bold text-gray-600 uppercase whitespace-nowrap">Price</th>
+                                <th class="p-3 border-b text-xs font-bold text-gray-600 uppercase whitespace-nowrap">Type / Target</th>
+                                <th class="p-3 border-b text-xs font-bold text-gray-600 uppercase whitespace-nowrap">Features</th>
+                                <th class="p-3 border-b text-xs font-bold text-gray-600 uppercase whitespace-nowrap">Status</th>
+                                <th class="p-3 border-b text-right text-xs font-bold text-gray-600 uppercase whitespace-nowrap">Actions</th>
+                            </tr>
+                        </thead>
                     <tbody class="divide-y divide-gray-100">
                         @foreach($plans as $plan)
                             <tr class="hover:bg-gray-50/60 transition">
@@ -97,6 +98,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             </div>
             @if($plans->hasPages())
                 <div class="p-4 border-t border-gray-100 bg-gray-50/50">

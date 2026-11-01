@@ -5,6 +5,9 @@
 @push('styles')
 <style>
     .cart-grid { display: grid; grid-template-columns: 2fr 1.2fr 1.5fr 1.2fr 40px; gap: 10px; align-items: center; }
+    @media (max-width: 639px) {
+        .cart-grid { min-width: 520px; }
+    }
 </style>
 @endpush
 
@@ -93,20 +96,22 @@
                     </div>
                 </div>
 
-                <div class="cart-grid border-b border-slate-200 pb-2 mb-3 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-                    <div>Product</div>
-                    <div>Price (₹)</div>
-                    <div>Qty</div>
-                    <div class="text-right">Total (₹)</div>
-                    <div></div>
-                </div>
+                <div class="overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0">
+                    <div class="cart-grid border-b border-slate-200 pb-2 mb-3 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                        <div>Product</div>
+                        <div>Price (₹)</div>
+                        <div>Qty</div>
+                        <div class="text-right">Total (₹)</div>
+                        <div></div>
+                    </div>
 
-                <div id="cartItems" class="space-y-2 mb-4 min-h-[100px]">
-                    <div id="emptyCart" class="text-center text-slate-400 py-10 text-xs sm:text-sm">
-                        <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 text-base mx-auto mb-2">
-                            📦
+                    <div id="cartItems" class="space-y-2 mb-4 min-h-[100px]">
+                        <div id="emptyCart" class="text-center text-slate-400 py-10 text-xs sm:text-sm">
+                            <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 text-base mx-auto mb-2">
+                                📦
+                            </div>
+                            No items added yet. Type in the search box above or scan a barcode to add products.
                         </div>
-                        No items added yet. Type in the search box above or scan a barcode to add products.
                     </div>
                 </div>
             </div>

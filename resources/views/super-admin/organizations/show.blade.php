@@ -1,7 +1,7 @@
 @extends('layouts.super-admin')
 
 @section('content')
-<div class="mb-8 flex justify-between items-end">
+<div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
     <div>
         <a href="{{ route('super-admin.organizations.index') }}" class="text-sm text-gray-500 hover:text-indigo-600 mb-2 inline-block">&larr; Back to Organizations</a>
         <h1 class="text-2xl font-bold text-gray-900">{{ $organization->name }}</h1>
@@ -14,9 +14,9 @@
             @endif
         </div>
     </div>
-    <div class="flex gap-3">
+    <div class="flex flex-wrap gap-3 items-center">
         <a href="{{ route('super-admin.organizations.edit', $organization) }}" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium text-sm hover:bg-gray-50 transition">Edit Details</a>
-        <form action="{{ route('super-admin.organizations.toggle-status', $organization) }}" method="POST" onsubmit="return confirm('Are you sure you want to change this organization\'s status?');">
+        <form action="{{ route('super-admin.organizations.toggle-status', $organization) }}" method="POST" onsubmit="return confirm('Are you sure you want to change this organization\'s status?');" class="m-0">
             @csrf
             @method('PATCH')
             <button type="submit" class="px-4 py-2 rounded-lg font-medium text-sm transition {{ $organization->is_active ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200' : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-200' }}">
@@ -57,26 +57,26 @@
                 <h3 class="text-lg font-bold">Associated Users</h3>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-gray-600">
+                <table class="w-full text-left text-sm text-gray-600 min-w-[500px] sm:min-w-full">
                     <thead class="bg-white text-xs uppercase text-gray-400 font-semibold border-b border-gray-100 tracking-wider">
                         <tr>
-                            <th class="px-6 py-4">Name</th>
-                            <th class="px-6 py-4">Email</th>
-                            <th class="px-6 py-4">Roles</th>
-                            <th class="px-6 py-4">Joined</th>
+                            <th class="px-4 sm:px-6 py-3 sm:py-4">Name</th>
+                            <th class="px-4 sm:px-6 py-3 sm:py-4">Email</th>
+                            <th class="px-4 sm:px-6 py-3 sm:py-4">Roles</th>
+                            <th class="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">Joined</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-50">
                         @forelse($users as $user)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 font-medium text-gray-900">{{ $user->name }}</td>
-                            <td class="px-6 py-4">{{ $user->email }}</td>
-                            <td class="px-6 py-4">
+                            <td class="px-4 sm:px-6 py-3 sm:py-4 font-medium text-gray-900">{{ $user->name }}</td>
+                            <td class="px-4 sm:px-6 py-3 sm:py-4">{{ $user->email }}</td>
+                            <td class="px-4 sm:px-6 py-3 sm:py-4">
                                 @foreach($user->roles as $role)
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">{{ $role->name }}</span>
                                 @endforeach
                             </td>
-                            <td class="px-6 py-4">{{ $user->created_at->format('M d, Y') }}</td>
+                            <td class="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">{{ $user->created_at->format('M d, Y') }}</td>
                         </tr>
                         @empty
                         <tr>

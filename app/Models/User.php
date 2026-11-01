@@ -47,7 +47,13 @@ class User extends Authenticatable
         if ($this->hasRole('Organization Admin') || $this->hasRole('Super Admin')) {
             return true;
         }
-        return $this->locations()->where('locations.id', $locationId)->exists();
+        if ($this->locations()->exists()) {
+            return $this->locations()->where('locations.id', $locationId)->exists();
+        }
+        if ($this->employee && $this->employee->location_id) {
+            return $this->employee->location_id == $locationId;
+        }
+        return Location::where('id', $locationId)->where('organization_id', $this->organization_id)->exists();
     }
 
     /**

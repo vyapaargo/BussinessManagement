@@ -22,7 +22,7 @@ class CounterBillingController extends Controller
         $locationId = LocationManager::getActiveLocationId();
 
         if (!$locationId) {
-            return redirect()->route('organization.dashboard')->with('error', 'Please select a location to access Counter Billing.');
+            return redirect()->route('dashboard')->with('error', 'Please select a location to access Counter Billing.');
         }
 
         // Fetch Categories & Menu Items

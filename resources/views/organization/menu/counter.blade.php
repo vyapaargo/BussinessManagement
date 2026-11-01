@@ -218,10 +218,20 @@
                             </div>
 
                             <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-100">
-                                <span class="text-xs sm:text-sm font-mono font-black text-slate-950">₹{{ number_format($item->price, 2) }}</span>
-                                <span class="w-7 h-7 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 flex items-center justify-center font-black text-sm transition shadow-2xs">
-                                    +
-                                </span>
+                                @if($item->has_variants && $item->variants && $item->variants->count() > 0)
+                                    <div>
+                                        <span class="text-[9px] font-bold text-slate-400 block uppercase tracking-wider">From</span>
+                                        <span class="text-xs sm:text-sm font-mono font-black text-slate-950">₹{{ number_format($item->variants->min('price'), 2) }}</span>
+                                    </div>
+                                    <span class="px-2 py-1 rounded-lg bg-amber-500/15 border border-amber-400 text-amber-950 font-black text-[11px] group-hover:bg-amber-500 transition shadow-2xs">
+                                        Sizes +
+                                    </span>
+                                @else
+                                    <span class="text-xs sm:text-sm font-mono font-black text-slate-950">₹{{ number_format($item->price, 2) }}</span>
+                                    <span class="w-7 h-7 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 flex items-center justify-center font-black text-sm transition shadow-2xs">
+                                        +
+                                    </span>
+                                @endif
                             </div>
                         </div>
                     @endforeach
@@ -327,10 +337,15 @@
                     </template>
 
                     <!-- Cart Item Rows -->
-                    <template x-for="(item, index) in cart" :key="item.id">
+                    <template x-for="(item, index) in cart" :key="item.cartKey || item.id">
                         <div class="pt-2.5 flex items-center justify-between gap-2 text-xs">
                             <div class="flex-1 pr-1 min-w-0">
-                                <div class="font-extrabold text-slate-950 truncate" x-text="item.name"></div>
+                                <div class="font-extrabold text-slate-950 truncate flex items-center gap-1.5 flex-wrap">
+                                    <span x-text="item.name"></span>
+                                    <template x-if="item.variant_name">
+                                        <span class="bg-amber-200 text-amber-950 text-[10px] font-bold px-1.5 py-0.5 rounded border border-amber-300 shadow-2xs" x-text="item.variant_name"></span>
+                                    </template>
+                                </div>
                                 <div class="text-[11px] text-slate-600 font-medium mt-0.5">
                                     ₹<span x-text="item.price.toFixed(2)" class="font-mono"></span> × <span x-text="item.qty" class="font-bold"></span>
                                     <span class="text-amber-700 font-mono font-black ml-1">= ₹<span x-text="(item.price * item.qty).toFixed(2)"></span></span>
@@ -931,6 +946,48 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- DISH VARIANT / PORTION SELECTION MODAL    -->
+    <!-- ========================================== -->
+    <div x-show="variantModalOpen" x-cloak class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl space-y-4 border border-slate-200 my-auto overflow-hidden animate-in fade-in zoom-in duration-150" @click.away="variantModalOpen = false">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                    <div>
+                        <h3 class="font-extrabold text-sm text-slate-950" x-text="selectedItemForVariants?.name"></h3>
+                        <p class="text-[11px] text-slate-500 font-medium">Select Size / Portion Option</p>
+                    </div>
+                </div>
+                <button type="button" @click="variantModalOpen = false" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 font-black flex items-center justify-center text-xs cursor-pointer transition">✕</button>
+            </div>
+
+            <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
+                <template x-for="v in (selectedItemForVariants?.variants || [])" :key="v.id">
+                    <button type="button" @click="selectVariantAndAdd(v)" 
+                            class="w-full flex items-center justify-between p-3 rounded-xl border-2 border-slate-200 hover:border-amber-500 hover:bg-amber-50/50 transition cursor-pointer group text-left shadow-2xs">
+                        <div>
+                            <span class="text-xs font-black text-slate-900 group-hover:text-amber-700 block" x-text="v.name"></span>
+                            <span class="text-[10px] text-slate-400 font-semibold" x-text="v.is_available ? 'Available' : 'Sold out'"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-mono font-black text-slate-950 group-hover:text-amber-900" x-text="'₹' + parseFloat(v.price).toFixed(2)"></span>
+                            <span class="w-6 h-6 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-black text-xs transition">
+                                +
+                            </span>
+                        </div>
+                    </button>
+                </template>
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 flex justify-end">
+                <button type="button" @click="variantModalOpen = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs cursor-pointer">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
@@ -965,6 +1022,8 @@ function counterBilling() {
         customerPhone: '',
         cookingNotes: '',
         cart: [],
+        variantModalOpen: false,
+        selectedItemForVariants: null,
         
         // Modal State
         settleModalOpen: false,
@@ -1078,8 +1137,8 @@ function counterBilling() {
         },
 
         getItemCartQty(itemId) {
-            const item = this.cart.find(i => i.id === itemId);
-            return item ? item.qty : 0;
+            const items = this.cart.filter(i => i.id === itemId);
+            return items.reduce((sum, i) => sum + i.qty, 0);
         },
 
         get cartTotalQty() {
@@ -1135,14 +1194,38 @@ function counterBilling() {
         },
 
         addToCart(item) {
-            let existing = this.cart.find(i => i.id === item.id);
+            if (item.has_variants && item.variants && item.variants.length > 0) {
+                this.selectedItemForVariants = item;
+                this.variantModalOpen = true;
+                return;
+            }
+            this.pushToCart(item, null);
+        },
+
+        selectVariantAndAdd(variant) {
+            if (!this.selectedItemForVariants) return;
+            this.pushToCart(this.selectedItemForVariants, variant);
+            this.variantModalOpen = false;
+            this.selectedItemForVariants = null;
+        },
+
+        pushToCart(item, variant = null) {
+            const variantId = variant ? variant.id : null;
+            const variantName = variant ? variant.name : null;
+            const itemPrice = variant ? parseFloat(variant.price) : parseFloat(item.price);
+            const cartKey = item.id + '_' + (variantId || 0);
+
+            let existing = this.cart.find(i => i.cartKey === cartKey);
             if (existing) {
                 existing.qty++;
             } else {
                 this.cart.push({
+                    cartKey: cartKey,
                     id: item.id,
+                    variant_id: variantId,
+                    variant_name: variantName,
                     name: item.name,
-                    price: parseFloat(item.price),
+                    price: itemPrice,
                     qty: 1
                 });
             }
@@ -1222,7 +1305,7 @@ function counterBilling() {
                 customer_phone: this.customerPhone || null,
                 order_type: this.orderType,
                 notes: this.cookingNotes,
-                items: this.cart.map(i => ({ menu_item_id: i.id, quantity: i.qty }))
+                items: this.cart.map(i => ({ menu_item_id: i.id, menu_item_variant_id: i.variant_id || null, quantity: i.qty }))
             };
 
             fetch('{{ route("organization.menu.counter.orders.save") }}', {
@@ -1251,7 +1334,10 @@ function counterBilling() {
             this.orderType = order.order_type || 'Takeaway';
             this.cookingNotes = order.special_notes || '';
             this.cart = order.items.map(i => ({
+                cartKey: i.menu_item_id + '_' + (i.menu_item_variant_id || 0),
                 id: i.menu_item_id,
+                variant_id: i.menu_item_variant_id || null,
+                variant_name: i.variant_name || null,
                 name: i.name_snapshot,
                 price: parseFloat(i.price_snapshot),
                 qty: i.quantity
@@ -1350,7 +1436,7 @@ function counterBilling() {
                     customer_phone: this.customerPhone || null,
                     order_type: this.orderType,
                     notes: this.cookingNotes,
-                    items: this.cart.map(i => ({ menu_item_id: i.id, quantity: i.qty }))
+                    items: this.cart.map(i => ({ menu_item_id: i.id, menu_item_variant_id: i.variant_id || null, quantity: i.qty }))
                 };
 
                 fetch('{{ route("organization.menu.counter.orders.save") }}', {

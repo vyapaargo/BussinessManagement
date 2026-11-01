@@ -860,6 +860,7 @@
                         ${vegBadge}
                         <span class="font-black text-amber-400 bg-amber-950/80 border border-amber-500/30 px-1.5 py-0.5 rounded text-[11px] font-mono shrink-0">${item.quantity}x</span>
                         <span class="text-slate-100 font-bold truncate">${item.name_snapshot}</span>
+                        ${item.variant_name ? `<span class="bg-amber-500/25 text-amber-300 border border-amber-500/40 text-[9px] font-black uppercase px-1.5 py-0.5 rounded shrink-0">${item.variant_name}</span>` : ''}
                     </div>
                 </div>
             `;
@@ -987,6 +988,7 @@
                         ${vegBadge}
                         <span class="font-black text-amber-400 bg-amber-950 px-1.5 py-0.5 rounded border border-amber-500/30 font-mono">${item.quantity}x</span>
                         <span class="text-white font-bold">${item.name_snapshot}</span>
+                        ${item.variant_name ? `<span class="bg-amber-500/25 text-amber-300 border border-amber-500/40 text-[9px] font-black uppercase px-1.5 py-0.5 rounded shrink-0">${item.variant_name}</span>` : ''}
                     </div>
                     <div class="text-right font-mono">
                         <div class="text-slate-200 font-bold">₹${parseFloat(item.total).toFixed(2)}</div>

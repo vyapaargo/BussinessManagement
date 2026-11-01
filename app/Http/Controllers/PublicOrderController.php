@@ -22,13 +22,32 @@ class PublicOrderController extends Controller
         $cartKey = 'cart_' . $location->id;
         $cart = session()->get($cartKey, []);
 
-        if (isset($cart[$item->id])) {
-            $cart[$item->id]['quantity']++;
+        $variantId = $request->input('menu_item_variant_id');
+        $variant = null;
+        $price = (float)$item->price;
+        $name = $item->name;
+        $variantName = null;
+
+        if ($variantId) {
+            $variant = \App\Models\MenuItemVariant::where('menu_item_id', $item->id)->find($variantId);
+            if ($variant) {
+                $price = (float)$variant->price;
+                $variantName = $variant->name;
+                $name = $item->name . ' (' . $variant->name . ')';
+            }
+        }
+
+        $cartKeyItem = $variantId ? ($item->id . '_' . $variantId) : (string)$item->id;
+
+        if (isset($cart[$cartKeyItem])) {
+            $cart[$cartKeyItem]['quantity']++;
         } else {
-            $cart[$item->id] = [
+            $cart[$cartKeyItem] = [
                 'id' => $item->id,
-                'name' => $item->name,
-                'price' => $item->price,
+                'variant_id' => $variantId,
+                'variant_name' => $variantName,
+                'name' => $name,
+                'price' => $price,
                 'quantity' => 1
             ];
         }
@@ -133,13 +152,20 @@ class PublicOrderController extends Controller
 
             foreach ($cart as $cartItem) {
                 $item = MenuItem::findOrFail($cartItem['id']);
+                $variantId = $cartItem['variant_id'] ?? null;
+                $variantName = $cartItem['variant_name'] ?? null;
+                $price = (float)($cartItem['price'] ?? $item->price);
+                $nameSnapshot = $cartItem['name'] ?? $item->name;
+
                 RestaurantOrderItem::create([
                     'restaurant_order_id' => $order->id,
                     'menu_item_id' => $item->id,
-                    'name_snapshot' => $item->name,
-                    'price_snapshot' => $item->price,
+                    'menu_item_variant_id' => $variantId,
+                    'variant_name' => $variantName,
+                    'name_snapshot' => $nameSnapshot,
+                    'price_snapshot' => $price,
                     'quantity' => $cartItem['quantity'],
-                    'total' => $item->price * $cartItem['quantity']
+                    'total' => $price * $cartItem['quantity']
                 ]);
             }
 

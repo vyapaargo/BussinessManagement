@@ -37,7 +37,7 @@ class KitchenOrderController extends Controller
                 'status', 'created_at'
             ])
             ->with([
-                'items:id,restaurant_order_id,menu_item_id,name_snapshot,price_snapshot,quantity,total',
+                'items:id,restaurant_order_id,menu_item_id,menu_item_variant_id,variant_name,name_snapshot,price_snapshot,quantity,total',
                 'items.menuItem:id,is_veg',
                 'table:id,name'
             ])

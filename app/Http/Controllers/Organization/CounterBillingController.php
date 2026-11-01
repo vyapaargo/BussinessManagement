@@ -8,6 +8,7 @@ use App\Models\RestaurantOrder;
 use App\Models\RestaurantOrderItem;
 use App\Models\MenuCategory;
 use App\Models\MenuItem;
+use App\Models\MenuItemVariant;
 use App\Services\LocationManager;
 use App\Services\InvoiceService;
 use Illuminate\Support\Str;
@@ -27,7 +28,7 @@ class CounterBillingController extends Controller
 
         // Fetch Categories & Menu Items
         $categories = MenuCategory::with(['items' => function($q) {
-            $q->where('is_available', true)->orderBy('name');
+            $q->where('is_available', true)->with('variants')->orderBy('name');
         }])->where('organization_id', $orgId)
            ->where('location_id', $locationId)
            ->orderBy('sort_order')
@@ -86,6 +87,7 @@ class CounterBillingController extends Controller
             'notes' => 'nullable|string|max:500',
             'items' => 'required|array|min:1',
             'items.*.menu_item_id' => 'required|exists:menu_items,id',
+            'items.*.menu_item_variant_id' => 'nullable|exists:menu_item_variants,id',
             'items.*.quantity' => 'required|integer|min:1',
         ], [
             'customer_phone.regex' => 'Please enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.',
@@ -127,15 +129,35 @@ class CounterBillingController extends Controller
 
                 $subtotal = 0;
                 foreach ($request->items as $itemData) {
-                    $menuItem = MenuItem::findOrFail($itemData['menu_item_id']);
-                    $itemTotal = $menuItem->price * $itemData['quantity'];
+                    $menuItem = MenuItem::with('variants')->findOrFail($itemData['menu_item_id']);
+                    
+                    $price = (float)$menuItem->price;
+                    $nameSnapshot = $menuItem->name;
+                    $variantName = null;
+                    $variantId = null;
+
+                    if (!empty($itemData['menu_item_variant_id'])) {
+                        $variant = MenuItemVariant::where('menu_item_id', $menuItem->id)
+                            ->where('id', $itemData['menu_item_variant_id'])
+                            ->first();
+                        if ($variant) {
+                            $price = (float)$variant->price;
+                            $variantName = $variant->name;
+                            $variantId = $variant->id;
+                            $nameSnapshot = $menuItem->name . ' (' . $variant->name . ')';
+                        }
+                    }
+
+                    $itemTotal = $price * $itemData['quantity'];
                     $subtotal += $itemTotal;
 
                     RestaurantOrderItem::create([
                         'restaurant_order_id' => $order->id,
                         'menu_item_id' => $menuItem->id,
-                        'name_snapshot' => $menuItem->name,
-                        'price_snapshot' => $menuItem->price,
+                        'menu_item_variant_id' => $variantId,
+                        'variant_name' => $variantName,
+                        'name_snapshot' => $nameSnapshot,
+                        'price_snapshot' => $price,
                         'quantity' => $itemData['quantity'],
                         'total' => $itemTotal
                     ]);

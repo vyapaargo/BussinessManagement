@@ -245,9 +245,23 @@
                                         @endif
                                     </td>
 
-                                    <!-- Price -->
+                                    <!-- Price & Variations -->
                                     <td class="py-3 px-4 font-mono font-black text-slate-950 text-sm whitespace-nowrap">
-                                        ₹{{ number_format($item->price, 2) }}
+                                        @if($item->has_variants && $item->variants && $item->variants->count() > 0)
+                                            <div class="flex items-baseline gap-1">
+                                                <span class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">From</span>
+                                                <span class="text-sm font-black text-slate-950">₹{{ number_format($item->variants->min('price'), 2) }}</span>
+                                            </div>
+                                            <div class="flex items-center gap-1 flex-wrap mt-1 max-w-[200px]">
+                                                @foreach($item->variants as $var)
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-200" title="{{ $var->name }}: ₹{{ number_format($var->price, 2) }}">
+                                                        {{ $var->name }}: ₹{{ number_format($var->price, 0) }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            ₹{{ number_format($item->price, 2) }}
+                                        @endif
                                     </td>
 
                                     <!-- Stock Status Pill -->
@@ -324,7 +338,7 @@
 
 <!-- 1. Add Category Modal -->
 <div id="add-category-modal" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-    <div class="relative mx-auto p-6 border border-slate-200/90 w-full max-w-md shadow-2xl rounded-2xl bg-white space-y-5">
+    <div class="relative mx-auto p-6 border border-slate-200/90 w-full max-w-md shadow-2xl rounded-2xl bg-white space-y-5 my-auto">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100">
             <div class="flex items-center gap-2">
                 <span class="w-2 h-4 bg-amber-500 rounded-full"></span>
@@ -354,7 +368,7 @@
 
 <!-- 2. Edit Category Modal -->
 <div id="edit-category-modal" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-    <div class="relative mx-auto p-6 border border-slate-200/90 w-full max-w-md shadow-2xl rounded-2xl bg-white space-y-5">
+    <div class="relative mx-auto p-6 border border-slate-200/90 w-full max-w-md shadow-2xl rounded-2xl bg-white space-y-5 my-auto">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100">
             <div class="flex items-center gap-2">
                 <span class="w-2 h-4 bg-amber-500 rounded-full"></span>
@@ -386,65 +400,109 @@
 </div>
 
 <!-- 3. Add Item Modal -->
-<div id="add-item-modal" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-    <div class="relative mx-auto p-6 border border-slate-200/90 w-full max-w-lg shadow-2xl rounded-2xl bg-white space-y-5">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div id="add-item-modal" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs overflow-y-auto z-50 flex items-center justify-center p-3 sm:p-4">
+    <div class="relative mx-auto border border-slate-200/90 w-full max-w-lg shadow-2xl rounded-2xl bg-white flex flex-col max-h-[90vh] my-auto overflow-hidden animate-in fade-in zoom-in duration-150">
+        <!-- Sticky Header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-white shrink-0">
             <div class="flex items-center gap-2">
                 <span class="w-2 h-4 bg-amber-500 rounded-full"></span>
                 <h3 class="text-sm font-black text-slate-950 uppercase tracking-wider">
                     Add Dish to <span id="add-item-category-name" class="text-amber-700 font-extrabold"></span>
                 </h3>
             </div>
-            <button type="button" onclick="document.getElementById('add-item-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold">&times;</button>
+            <button type="button" onclick="document.getElementById('add-item-modal').classList.add('hidden')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 font-bold flex items-center justify-center text-sm transition cursor-pointer">&times;</button>
         </div>
 
-        <form action="{{ route('organization.menu.items.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+        <form action="{{ route('organization.menu.items.store') }}" method="POST" enctype="multipart/form-data" class="flex flex-col flex-1 overflow-hidden m-0">
             @csrf
             <input type="hidden" name="menu_category_id" id="add-item-category-id">
             
-            <div>
-                <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dish Item Name <span class="text-rose-600">*</span></label>
-                <input type="text" name="name" class="w-full border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-xs font-bold text-slate-950 p-3 outline-none transition bg-white" required placeholder="e.g. Butter Chicken / Paneer Tikka">
-            </div>
-            
-            <div>
-                <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Price (₹) <span class="text-rose-600">*</span></label>
-                <input type="number" step="0.01" name="price" class="w-full border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-xs font-bold text-slate-950 p-3 font-mono outline-none transition bg-white" required placeholder="280.00">
-            </div>
+            <!-- Scrollable Body -->
+            <div class="p-5 overflow-y-auto flex-1 space-y-4">
+                <div>
+                    <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dish Item Name <span class="text-rose-600">*</span></label>
+                    <input type="text" name="name" class="w-full border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-xs font-bold text-slate-950 p-3 outline-none transition bg-white" required placeholder="e.g. Butter Chicken / Paneer Tikka">
+                </div>
+                
+                <!-- Pricing & Portions / Variations -->
+                <div class="p-3.5 bg-amber-50/50 rounded-xl border border-amber-200 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-black text-slate-950 block">Dish Variations / Sizes</span>
+                            <span class="text-[11px] text-slate-500 font-medium">e.g. Small / Medium / Large (Pizza) or Half / Full (Dish)</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="add-item-has-variants" name="has_variants" value="1" onchange="toggleItemVariantsUI('add')" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                        </label>
+                    </div>
 
-            <!-- Dietary Type: Veg vs Non-Veg -->
-            <div>
-                <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dietary Food Preference <span class="text-rose-600">*</span></label>
-                <div class="grid grid-cols-2 gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
-                    <label class="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white shadow-2xs cursor-pointer hover:border-emerald-400 transition">
-                        <input type="radio" name="is_veg" value="1" checked class="text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer">
-                        <span class="w-3 h-3 rounded-xs border border-emerald-600 flex items-center justify-center shrink-0">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                        </span>
-                        <span class="text-xs font-black text-slate-900">🟢 Veg (Vegetarian)</span>
-                    </label>
-                    <label class="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white shadow-2xs cursor-pointer hover:border-rose-400 transition">
-                        <input type="radio" name="is_veg" value="0" class="text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer">
-                        <span class="w-3 h-3 rounded-xs border border-rose-600 flex items-center justify-center shrink-0">
-                            <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
-                        </span>
-                        <span class="text-xs font-black text-slate-900">🔴 Non-Veg</span>
-                    </label>
+                    <!-- Single Price (Default) -->
+                    <div id="add-item-single-price-box">
+                        <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Price (₹) <span class="text-rose-600">*</span></label>
+                        <input type="number" step="0.01" id="add-item-price" name="price" class="w-full border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-xs font-bold text-slate-950 p-3 font-mono outline-none transition bg-white" required placeholder="280.00">
+                    </div>
+
+                    <!-- Variations Builder (Shown when toggle is ON) -->
+                    <div id="add-item-variants-box" class="space-y-3 hidden pt-2 border-t border-amber-200/80">
+                        <div>
+                            <span class="text-[10px] font-black uppercase text-slate-500 tracking-wider block mb-1">Quick Presets:</span>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <button type="button" onclick="applyVariantPreset('add', 'pizza')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white hover:bg-amber-100 text-amber-950 border border-amber-300 transition cursor-pointer shadow-2xs">
+                                    🍕 Pizza (Small, Medium, Large)
+                                </button>
+                                <button type="button" onclick="applyVariantPreset('add', 'half_full')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white hover:bg-amber-100 text-amber-950 border border-amber-300 transition cursor-pointer shadow-2xs">
+                                    🍲 Half / Full
+                                </button>
+                                <button type="button" onclick="applyVariantPreset('add', 'regular_large')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white hover:bg-amber-100 text-amber-950 border border-amber-300 transition cursor-pointer shadow-2xs">
+                                    🥤 Regular / Large
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="add-variants-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+
+                        <button type="button" onclick="addVariantRow('add')" class="w-full py-2.5 bg-white hover:bg-slate-50 border border-dashed border-amber-400 text-amber-900 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs">
+                            <span>+ Add Option / Size</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dietary Type: Veg vs Non-Veg -->
+                <div>
+                    <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dietary Food Preference <span class="text-rose-600">*</span></label>
+                    <div class="grid grid-cols-2 gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+                        <label class="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white shadow-2xs cursor-pointer hover:border-emerald-400 transition">
+                            <input type="radio" name="is_veg" value="1" checked class="text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer">
+                            <span class="w-3 h-3 rounded-xs border border-emerald-600 flex items-center justify-center shrink-0">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                            </span>
+                            <span class="text-xs font-black text-slate-900">🟢 Veg (Vegetarian)</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white shadow-2xs cursor-pointer hover:border-rose-400 transition">
+                            <input type="radio" name="is_veg" value="0" class="text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer">
+                            <span class="w-3 h-3 rounded-xs border border-rose-600 flex items-center justify-center shrink-0">
+                                <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                            </span>
+                            <span class="text-xs font-black text-slate-900">🔴 Non-Veg</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dish Description / Ingredients</label>
+                    <textarea name="description" rows="2" class="w-full border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-xs font-medium text-slate-950 p-3 outline-none transition bg-white" placeholder="e.g. Fresh cottage cheese simmered in slow-cooked rich tomato and cashew gravy"></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dish Photo (Optional)</label>
+                    <input type="file" name="photo" accept="image/*" class="w-full border border-slate-300 rounded-xl text-xs p-2.5 bg-white text-slate-700 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-100 file:text-slate-800 hover:file:bg-slate-200">
                 </div>
             </div>
-            
-            <div>
-                <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dish Description / Ingredients</label>
-                <textarea name="description" rows="2" class="w-full border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-xs font-medium text-slate-950 p-3 outline-none transition bg-white" placeholder="e.g. Fresh cottage cheese simmered in slow-cooked rich tomato and cashew gravy"></textarea>
-            </div>
-            
-            <div>
-                <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dish Photo (Optional)</label>
-                <input type="file" name="photo" accept="image/*" class="w-full border border-slate-300 rounded-xl text-xs p-2.5 bg-white text-slate-700 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-100 file:text-slate-800 hover:file:bg-slate-200">
-            </div>
 
-            <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                <button type="button" onclick="document.getElementById('add-item-modal').classList.add('hidden')" class="px-4 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer">Cancel</button>
+            <!-- Sticky Footer -->
+            <div class="flex justify-end gap-2 px-5 py-3.5 border-t border-slate-100 bg-slate-50 shrink-0">
+                <button type="button" onclick="document.getElementById('add-item-modal').classList.add('hidden')" class="px-4 py-2 border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer">Cancel</button>
                 <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-950 font-extrabold rounded-xl text-xs shadow-xs transition cursor-pointer">Save Dish Item</button>
             </div>
         </form>
@@ -452,74 +510,118 @@
 </div>
 
 <!-- 4. Edit Item Modal -->
-<div id="edit-item-modal" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-    <div class="relative mx-auto p-6 border border-slate-200/90 w-full max-w-lg shadow-2xl rounded-2xl bg-white space-y-5">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+<div id="edit-item-modal" class="hidden fixed inset-0 bg-slate-950/60 backdrop-blur-xs overflow-y-auto z-50 flex items-center justify-center p-3 sm:p-4">
+    <div class="relative mx-auto border border-slate-200/90 w-full max-w-lg shadow-2xl rounded-2xl bg-white flex flex-col max-h-[90vh] my-auto overflow-hidden animate-in fade-in zoom-in duration-150">
+        <!-- Sticky Header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-white shrink-0">
             <div class="flex items-center gap-2">
                 <span class="w-2 h-4 bg-amber-500 rounded-full"></span>
                 <h3 class="text-sm font-black text-slate-950 uppercase tracking-wider">Edit Dish Item</h3>
             </div>
-            <button type="button" onclick="document.getElementById('edit-item-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold">&times;</button>
+            <button type="button" onclick="document.getElementById('edit-item-modal').classList.add('hidden')" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 font-bold flex items-center justify-center text-sm transition cursor-pointer">&times;</button>
         </div>
 
-        <form id="edit-item-form" method="POST" enctype="multipart/form-data" class="space-y-4">
+        <form id="edit-item-form" method="POST" enctype="multipart/form-data" class="flex flex-col flex-1 overflow-hidden m-0">
             @csrf
             @method('PUT')
             
-            <div>
-                <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dish Item Name <span class="text-rose-600">*</span></label>
-                <input type="text" id="edit-item-name" name="name" class="w-full border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-xs font-bold text-slate-950 p-3 outline-none transition bg-white" required>
-            </div>
-            
-            <div>
-                <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Price (₹) <span class="text-rose-600">*</span></label>
-                <input type="number" step="0.01" id="edit-item-price" name="price" class="w-full border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-xs font-bold text-slate-950 p-3 font-mono outline-none transition bg-white" required>
-            </div>
+            <!-- Scrollable Body -->
+            <div class="p-5 overflow-y-auto flex-1 space-y-4">
+                <div>
+                    <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dish Item Name <span class="text-rose-600">*</span></label>
+                    <input type="text" id="edit-item-name" name="name" class="w-full border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-xs font-bold text-slate-950 p-3 outline-none transition bg-white" required>
+                </div>
+                
+                <!-- Pricing & Portions / Variations -->
+                <div class="p-3.5 bg-amber-50/50 rounded-xl border border-amber-200 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-black text-slate-950 block">Dish Variations / Sizes</span>
+                            <span class="text-[11px] text-slate-500 font-medium">e.g. Small / Medium / Large (Pizza) or Half / Full (Dish)</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="edit-item-has-variants" name="has_variants" value="1" onchange="toggleItemVariantsUI('edit')" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                        </label>
+                    </div>
 
-            <!-- Dietary Type: Veg vs Non-Veg -->
-            <div>
-                <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dietary Food Preference <span class="text-rose-600">*</span></label>
-                <div class="grid grid-cols-2 gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
-                    <label class="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white shadow-2xs cursor-pointer hover:border-emerald-400 transition">
-                        <input type="radio" id="edit-item-is-veg-1" name="is_veg" value="1" class="text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer">
-                        <span class="w-3 h-3 rounded-xs border border-emerald-600 flex items-center justify-center shrink-0">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                        </span>
-                        <span class="text-xs font-black text-slate-900">🟢 Veg (Vegetarian)</span>
+                    <!-- Single Price (Default) -->
+                    <div id="edit-item-single-price-box">
+                        <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Price (₹) <span class="text-rose-600">*</span></label>
+                        <input type="number" step="0.01" id="edit-item-price" name="price" class="w-full border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-xs font-bold text-slate-950 p-3 font-mono outline-none transition bg-white">
+                    </div>
+
+                    <!-- Variations Builder (Shown when toggle is ON) -->
+                    <div id="edit-item-variants-box" class="space-y-3 hidden pt-2 border-t border-amber-200/80">
+                        <div>
+                            <span class="text-[10px] font-black uppercase text-slate-500 tracking-wider block mb-1">Quick Presets:</span>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <button type="button" onclick="applyVariantPreset('edit', 'pizza')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white hover:bg-amber-100 text-amber-950 border border-amber-300 transition cursor-pointer shadow-2xs">
+                                    🍕 Pizza (Small, Medium, Large)
+                                </button>
+                                <button type="button" onclick="applyVariantPreset('edit', 'half_full')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white hover:bg-amber-100 text-amber-950 border border-amber-300 transition cursor-pointer shadow-2xs">
+                                    🍲 Half / Full
+                                </button>
+                                <button type="button" onclick="applyVariantPreset('edit', 'regular_large')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white hover:bg-amber-100 text-amber-950 border border-amber-300 transition cursor-pointer shadow-2xs">
+                                    🥤 Regular / Large
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="edit-variants-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+
+                        <button type="button" onclick="addVariantRow('edit')" class="w-full py-2.5 bg-white hover:bg-slate-50 border border-dashed border-amber-400 text-amber-900 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs">
+                            <span>+ Add Option / Size</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dietary Type: Veg vs Non-Veg -->
+                <div>
+                    <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dietary Food Preference <span class="text-rose-600">*</span></label>
+                    <div class="grid grid-cols-2 gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+                        <label class="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white shadow-2xs cursor-pointer hover:border-emerald-400 transition">
+                            <input type="radio" id="edit-item-is-veg-1" name="is_veg" value="1" class="text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer">
+                            <span class="w-3 h-3 rounded-xs border border-emerald-600 flex items-center justify-center shrink-0">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                            </span>
+                            <span class="text-xs font-black text-slate-900">🟢 Veg (Vegetarian)</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white shadow-2xs cursor-pointer hover:border-rose-400 transition">
+                            <input type="radio" id="edit-item-is-veg-0" name="is_veg" value="0" class="text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer">
+                            <span class="w-3 h-3 rounded-xs border border-rose-600 flex items-center justify-center shrink-0">
+                                <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                            </span>
+                            <span class="text-xs font-black text-slate-900">🔴 Non-Veg</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dish Description / Ingredients</label>
+                    <textarea id="edit-item-description" name="description" rows="2" class="w-full border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-xs font-medium text-slate-950 p-3 outline-none transition bg-white"></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Change Photo (Optional)</label>
+                    <input type="file" name="photo" accept="image/*" class="w-full border border-slate-300 rounded-xl text-xs p-2.5 bg-white text-slate-700 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-100 file:text-slate-800 hover:file:bg-slate-200">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="edit-item-available" name="is_available" value="1" class="rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer">
+                        <span class="text-xs font-bold text-slate-900">In Stock (Serving)</span>
                     </label>
-                    <label class="flex items-center gap-2 p-2.5 rounded-lg border border-slate-200 bg-white shadow-2xs cursor-pointer hover:border-rose-400 transition">
-                        <input type="radio" id="edit-item-is-veg-0" name="is_veg" value="0" class="text-rose-600 focus:ring-rose-500 w-4 h-4 cursor-pointer">
-                        <span class="w-3 h-3 rounded-xs border border-rose-600 flex items-center justify-center shrink-0">
-                            <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
-                        </span>
-                        <span class="text-xs font-black text-slate-900">🔴 Non-Veg</span>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="edit-item-active" name="is_active" value="1" class="rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer">
+                        <span class="text-xs font-bold text-slate-900">Visible on Menu</span>
                     </label>
                 </div>
             </div>
-            
-            <div>
-                <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Dish Description / Ingredients</label>
-                <textarea id="edit-item-description" name="description" rows="2" class="w-full border border-slate-300 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 rounded-xl text-xs font-medium text-slate-950 p-3 outline-none transition bg-white"></textarea>
-            </div>
-            
-            <div>
-                <label class="block text-xs font-black text-slate-900 uppercase tracking-wider mb-1.5">Change Photo (Optional)</label>
-                <input type="file" name="photo" accept="image/*" class="w-full border border-slate-300 rounded-xl text-xs p-2.5 bg-white text-slate-700 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-100 file:text-slate-800 hover:file:bg-slate-200">
-            </div>
 
-            <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" id="edit-item-available" name="is_available" value="1" class="rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer">
-                    <span class="text-xs font-bold text-slate-900">In Stock (Serving)</span>
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" id="edit-item-active" name="is_active" value="1" class="rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer">
-                    <span class="text-xs font-bold text-slate-900">Visible on Menu</span>
-                </label>
-            </div>
-
-            <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
-                <button type="button" onclick="document.getElementById('edit-item-modal').classList.add('hidden')" class="px-4 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer">Cancel</button>
+            <!-- Sticky Footer -->
+            <div class="flex justify-end gap-2 px-5 py-3.5 border-t border-slate-100 bg-slate-50 shrink-0">
+                <button type="button" onclick="document.getElementById('edit-item-modal').classList.add('hidden')" class="px-4 py-2 border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer">Cancel</button>
                 <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-950 font-extrabold rounded-xl text-xs shadow-xs transition cursor-pointer">Update Dish Item</button>
             </div>
         </form>
@@ -528,10 +630,71 @@
 
 <script>
     let activeStockFilter = 'all';
+    let variantRowCounter = 0;
+
+    function toggleItemVariantsUI(mode) {
+        const toggle = document.getElementById(`${mode}-item-has-variants`);
+        const singleBox = document.getElementById(`${mode}-item-single-price-box`);
+        const variantsBox = document.getElementById(`${mode}-item-variants-box`);
+        const singlePriceInput = document.getElementById(`${mode}-item-price`);
+        const list = document.getElementById(`${mode}-variants-list`);
+
+        if (toggle.checked) {
+            singleBox.classList.add('hidden');
+            singlePriceInput.removeAttribute('required');
+            variantsBox.classList.remove('hidden');
+            if (list.children.length === 0) {
+                addVariantRow(mode, 'Half', '');
+                addVariantRow(mode, 'Full', '');
+            }
+        } else {
+            singleBox.classList.remove('hidden');
+            singlePriceInput.setAttribute('required', 'required');
+            variantsBox.classList.add('hidden');
+        }
+    }
+
+    function addVariantRow(mode, name = '', price = '', id = '') {
+        const list = document.getElementById(`${mode}-variants-list`);
+        const idx = variantRowCounter++;
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-200 shadow-2xs variant-row';
+        row.innerHTML = `
+            ${id ? `<input type="hidden" name="variants[${idx}][id]" value="${id}">` : ''}
+            <input type="text" name="variants[${idx}][name]" value="${name}" placeholder="Size / Option Name (e.g. Small)" required
+                   class="flex-1 min-w-0 border border-slate-300 focus:border-amber-500 rounded-lg text-xs font-bold text-slate-900 py-2 px-3 outline-none">
+            <div class="relative w-32 shrink-0">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500 font-bold text-xs select-none">₹</div>
+                <input type="number" step="0.01" name="variants[${idx}][price]" value="${price}" placeholder="0.00" required
+                       class="w-full border border-slate-300 focus:border-amber-500 rounded-lg text-xs font-mono font-bold text-slate-900 py-2 pr-2.5 pl-8 outline-none bg-white">
+            </div>
+            <button type="button" onclick="this.closest('.variant-row').remove()" class="w-7 h-7 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 font-bold flex items-center justify-center text-sm transition cursor-pointer shrink-0" title="Remove">&times;</button>
+        `;
+        list.appendChild(row);
+    }
+
+    function applyVariantPreset(mode, preset) {
+        const list = document.getElementById(`${mode}-variants-list`);
+        list.innerHTML = '';
+        if (preset === 'pizza') {
+            addVariantRow(mode, 'Small', '');
+            addVariantRow(mode, 'Medium', '');
+            addVariantRow(mode, 'Large', '');
+        } else if (preset === 'half_full') {
+            addVariantRow(mode, 'Half', '');
+            addVariantRow(mode, 'Full', '');
+        } else if (preset === 'regular_large') {
+            addVariantRow(mode, 'Regular', '');
+            addVariantRow(mode, 'Large', '');
+        }
+    }
 
     function openAddItemModal(categoryId, categoryName) {
         document.getElementById('add-item-category-id').value = categoryId;
         document.getElementById('add-item-category-name').innerText = categoryName;
+        document.getElementById('add-item-has-variants').checked = false;
+        document.getElementById('add-variants-list').innerHTML = '';
+        toggleItemVariantsUI('add');
         document.getElementById('add-item-modal').classList.remove('hidden');
     }
 
@@ -554,6 +717,19 @@
         document.getElementById('edit-item-is-veg-0').checked = !isVeg;
         document.getElementById('edit-item-available').checked = Boolean(itemData.is_available);
         document.getElementById('edit-item-active').checked = Boolean(itemData.is_active);
+
+        // Populate Variants
+        const hasVariants = Boolean(itemData.has_variants) && itemData.variants && itemData.variants.length > 0;
+        document.getElementById('edit-item-has-variants').checked = hasVariants;
+        const list = document.getElementById('edit-variants-list');
+        list.innerHTML = '';
+        if (hasVariants) {
+            itemData.variants.forEach(v => {
+                addVariantRow('edit', v.name, v.price, v.id);
+            });
+        }
+        toggleItemVariantsUI('edit');
+
         document.getElementById('edit-item-modal').classList.remove('hidden');
     }
 

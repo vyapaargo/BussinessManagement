@@ -202,10 +202,20 @@
                                 </div>
 
                                 <div class="flex items-center justify-between mt-3 pt-2.5 border-t border-slate-100">
-                                    <span class="text-sm font-black text-slate-950 font-mono">₹{{ number_format($item->price, 2) }}</span>
-                                    <span class="w-7 h-7 rounded-xl bg-slate-100 text-slate-900 group-hover:bg-slate-950 group-hover:text-amber-400 flex items-center justify-center font-black text-sm transition shadow-2xs">
-                                        +
-                                    </span>
+                                    @if($item->has_variants && $item->variants && $item->variants->count() > 0)
+                                        <div>
+                                            <span class="text-[9px] font-bold text-slate-400 block uppercase tracking-wider">From</span>
+                                            <span class="text-sm font-black text-slate-950 font-mono">₹{{ number_format($item->variants->min('price'), 2) }}</span>
+                                        </div>
+                                        <span class="px-2 py-1 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 group-hover:bg-amber-500 group-hover:text-slate-950 font-black text-[11px] transition shadow-2xs">
+                                            Sizes +
+                                        </span>
+                                    @else
+                                        <span class="text-sm font-black text-slate-950 font-mono">₹{{ number_format($item->price, 2) }}</span>
+                                        <span class="w-7 h-7 rounded-xl bg-slate-100 text-slate-900 group-hover:bg-slate-950 group-hover:text-amber-400 flex items-center justify-center font-black text-sm transition shadow-2xs">
+                                            +
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach
@@ -298,9 +308,12 @@
                     <template x-for="(item, index) in cart" :key="'cart_'+index">
                         <div class="flex items-center justify-between p-2.5 rounded-2xl bg-amber-50/70 border-2 border-amber-300 text-xs shadow-2xs">
                             <div class="flex-1 pr-2 min-w-0">
-                                <div class="font-black text-slate-950 truncate flex items-center gap-1.5">
+                                <div class="font-black text-slate-950 truncate flex items-center gap-1.5 flex-wrap">
                                     <span class="w-2 h-2 bg-amber-500 rounded-full shrink-0"></span>
                                     <span x-text="item.name"></span>
+                                    <template x-if="item.variant_name">
+                                        <span class="bg-amber-200 text-amber-950 text-[10px] font-bold px-1.5 py-0.5 rounded border border-amber-300 shadow-2xs" x-text="item.variant_name"></span>
+                                    </template>
                                 </div>
                                 <div class="text-[10px] text-amber-950 font-extrabold pl-3">
                                     ₹<span x-text="item.price.toFixed(2)"></span> &times; <span x-text="item.qty"></span>
@@ -573,6 +586,48 @@
     <!-- Hidden iframe for seamless direct thermal printing without page navigation -->
     <iframe id="pos-print-frame" style="position:fixed; right:0; bottom:0; width:0; height:0; border:0; visibility:hidden;"></iframe>
 
+    <!-- ========================================== -->
+    <!-- DISH VARIANT / PORTION SELECTION MODAL    -->
+    <!-- ========================================== -->
+    <div x-show="variantModalOpen" x-cloak class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-slate-200 space-y-4 my-auto overflow-hidden animate-in fade-in zoom-in duration-150" @click.away="variantModalOpen = false">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                    <div>
+                        <h3 class="font-black text-base text-slate-950 tracking-tight" x-text="selectedItemForVariants?.name"></h3>
+                        <p class="text-[11px] text-slate-500 font-bold">Select Size / Portion Option</p>
+                    </div>
+                </div>
+                <button type="button" @click="variantModalOpen = false" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-black flex items-center justify-center text-sm cursor-pointer transition">✕</button>
+            </div>
+
+            <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
+                <template x-for="v in (selectedItemForVariants?.variants || [])" :key="v.id">
+                    <button type="button" @click="selectVariantAndAdd(v)" 
+                            class="w-full flex items-center justify-between p-3.5 rounded-2xl border-2 border-slate-200 hover:border-amber-500 hover:bg-amber-50/50 transition cursor-pointer group text-left shadow-2xs">
+                        <div>
+                            <span class="text-xs font-black text-slate-900 group-hover:text-amber-700 block" x-text="v.name"></span>
+                            <span class="text-[10px] text-slate-400 font-semibold" x-text="v.is_available ? 'Available' : 'Sold out'"></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-mono font-black text-slate-950 group-hover:text-amber-900" x-text="'₹' + parseFloat(v.price).toFixed(2)"></span>
+                            <span class="w-7 h-7 rounded-xl bg-slate-100 group-hover:bg-amber-500 group-hover:text-slate-950 text-slate-800 flex items-center justify-center font-black text-sm transition">
+                                +
+                            </span>
+                        </div>
+                    </button>
+                </template>
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 flex justify-end">
+                <button type="button" @click="variantModalOpen = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs cursor-pointer">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
@@ -593,6 +648,8 @@ function waiterPos() {
         customerPhone: '',
         cookingNotes: '',
         cart: [],
+        variantModalOpen: false,
+        selectedItemForVariants: null,
         discount: 0,
         subtotal: 0,
         cgst: 0,
@@ -747,6 +804,8 @@ function waiterPos() {
                             order.items.forEach(i => {
                                 allSent.push({
                                     id: i.menu_item_id,
+                                    variant_id: i.menu_item_variant_id || null,
+                                    variant_name: i.variant_name || null,
                                     name: i.name_snapshot,
                                     price: parseFloat(i.price_snapshot),
                                     qty: i.quantity
@@ -766,9 +825,12 @@ function waiterPos() {
         },
 
         get combinedItems() {
-            let items = [...this.sentItems];
+            let items = [];
+            this.sentItems.forEach(s => {
+                items.push({...s});
+            });
             this.cart.forEach(c => {
-                let existing = items.find(i => i.id === c.id);
+                let existing = items.find(i => i.id === c.id && (i.variant_id || null) === (c.variant_id || null));
                 if (existing) {
                     existing.qty += c.qty;
                 } else {
@@ -779,14 +841,38 @@ function waiterPos() {
         },
 
         addToTicket(item) {
-            let existing = this.cart.find(i => i.id === item.id);
+            if (item.has_variants && item.variants && item.variants.length > 0) {
+                this.selectedItemForVariants = item;
+                this.variantModalOpen = true;
+                return;
+            }
+            this.pushToTicket(item, null);
+        },
+
+        selectVariantAndAdd(variant) {
+            if (!this.selectedItemForVariants) return;
+            this.pushToTicket(this.selectedItemForVariants, variant);
+            this.variantModalOpen = false;
+            this.selectedItemForVariants = null;
+        },
+
+        pushToTicket(item, variant = null) {
+            const variantId = variant ? variant.id : null;
+            const variantName = variant ? variant.name : null;
+            const itemPrice = variant ? parseFloat(variant.price) : parseFloat(item.price);
+            const cartKey = item.id + '_' + (variantId || 0);
+
+            let existing = this.cart.find(i => i.cartKey === cartKey);
             if (existing) {
                 existing.qty++;
             } else {
                 this.cart.push({
+                    cartKey: cartKey,
                     id: item.id,
+                    variant_id: variantId,
+                    variant_name: variantName,
                     name: item.name,
-                    price: parseFloat(item.price),
+                    price: itemPrice,
                     qty: 1
                 });
             }
@@ -845,7 +931,7 @@ function waiterPos() {
                 customer_name: this.customerName,
                 customer_phone: this.customerPhone,
                 notes: this.cookingNotes,
-                items: this.cart.map(i => ({ menu_item_id: i.id, quantity: i.qty }))
+                items: this.cart.map(i => ({ menu_item_id: i.id, menu_item_variant_id: i.variant_id || null, quantity: i.qty }))
             };
 
             fetch('{{ route("organization.menu.pos.orders.save") }}', {
@@ -934,7 +1020,7 @@ function waiterPos() {
                 customer_name: this.customerName,
                 customer_phone: this.customerPhone,
                 notes: this.cookingNotes,
-                items: this.cart.map(i => ({ menu_item_id: i.id, quantity: i.qty }))
+                items: this.cart.map(i => ({ menu_item_id: i.id, menu_item_variant_id: i.variant_id || null, quantity: i.qty }))
             };
 
             fetch('{{ route("organization.menu.pos.orders.save") }}', {

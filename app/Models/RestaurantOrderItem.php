@@ -17,4 +17,9 @@ class RestaurantOrderItem extends Model
     {
         return $this->belongsTo(MenuItem::class, 'menu_item_id');
     }
+
+    public function variant()
+    {
+        return $this->belongsTo(MenuItemVariant::class, 'menu_item_variant_id');
+    }
 }

@@ -16,7 +16,7 @@ class PublicMenuController extends Controller
         }
 
         $categories = MenuCategory::with(['items' => function($q) {
-            $q->where('is_active', true)->orderBy('sort_order');
+            $q->where('is_active', true)->with('variants')->orderBy('sort_order');
         }])->where('organization_id', $organization->id)
           ->where('location_id', $location->id)
           ->where('is_active', true)

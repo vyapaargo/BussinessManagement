@@ -8,7 +8,21 @@
     searchQuery: '',
     dishModalOpen: false,
     modalDish: {},
-    modalCategory: ''
+    modalCategory: '',
+    selectedVariantId: null,
+    selectedVariantPrice: null,
+    openDishModal(dish, categoryName) {
+        this.modalDish = dish;
+        this.modalCategory = categoryName;
+        if (dish.has_variants && dish.variants && dish.variants.length > 0) {
+            this.selectedVariantId = dish.variants[0].id;
+            this.selectedVariantPrice = parseFloat(dish.variants[0].price);
+        } else {
+            this.selectedVariantId = null;
+            this.selectedVariantPrice = parseFloat(dish.price || 0);
+        }
+        this.dishModalOpen = true;
+    }
 }" class="min-h-screen bg-white pb-10">
 
     <!-- TAB 1: HOME OVERVIEW -->
@@ -157,7 +171,12 @@
                         <div class="divide-y divide-gray-100 divide-dashed">
                             @foreach($category->items as $item)
                                 @php
-                                    $inCartQty = isset($cart[$item->id]) ? $cart[$item->id]['quantity'] : 0;
+                                    $inCartQty = 0;
+                                    foreach($cart as $cKey => $cItem) {
+                                        if ($cItem['id'] == $item->id) {
+                                            $inCartQty += $cItem['quantity'];
+                                        }
+                                    }
                                     $isNonVeg = preg_match('/chicken|mutton|egg|fish|meat|prawn/i', $item->name . ' ' . ($item->description ?? ''));
                                 @endphp
                                 <div x-show="!searchQuery || '{{ strtolower(addslashes($item->name)) }}'.includes(searchQuery.toLowerCase()) || '{{ strtolower(addslashes($category->name)) }}'.includes(searchQuery.toLowerCase())"
@@ -177,19 +196,27 @@
                                         @endif
 
                                         <!-- Dish Title -->
-                                        <h4 @click="modalDish = {{ json_encode($item) }}; modalCategory = '{{ addslashes($category->name) }}'; dishModalOpen = true" 
+                                        <h4 @click="openDishModal({{ json_encode($item) }}, '{{ addslashes($category->name) }}')" 
                                             class="text-sm sm:text-base font-bold text-gray-900 cursor-pointer hover:text-orange-600 transition leading-snug">
                                             {{ $item->name }}
                                         </h4>
 
                                         <!-- Dish Price -->
-                                        <div class="text-sm font-extrabold text-gray-900 font-mono">
-                                            ₹{{ number_format($item->price, 2) }}
+                                        <div class="text-sm font-extrabold text-gray-900 font-mono flex items-center gap-1.5 flex-wrap">
+                                            @if($item->has_variants && $item->variants && $item->variants->count() > 0)
+                                                <span class="text-[10px] text-gray-400 font-sans font-semibold">From</span>
+                                                <span>₹{{ number_format($item->variants->min('price'), 2) }}</span>
+                                                <span class="text-[9px] bg-orange-50 text-orange-700 font-sans font-extrabold px-1.5 py-0.5 rounded border border-orange-200">
+                                                    Customisable
+                                                </span>
+                                            @else
+                                                <span>₹{{ number_format($item->price, 2) }}</span>
+                                            @endif
                                         </div>
 
                                         <!-- Dish Description -->
                                         @if($item->description)
-                                            <p @click="modalDish = {{ json_encode($item) }}; modalCategory = '{{ addslashes($category->name) }}'; dishModalOpen = true" 
+                                            <p @click="openDishModal({{ json_encode($item) }}, '{{ addslashes($category->name) }}')" 
                                                class="text-xs text-gray-500 font-medium line-clamp-2 leading-relaxed cursor-pointer pt-0.5">
                                                 {{ $item->description }}
                                             </p>
@@ -199,7 +226,7 @@
                                     <!-- Right Side: Image Thumbnail & + Add / Stepper Button -->
                                     <div class="relative shrink-0 flex flex-col items-center">
                                         <!-- Image Container -->
-                                        <div @click="modalDish = {{ json_encode($item) }}; modalCategory = '{{ addslashes($category->name) }}'; dishModalOpen = true" 
+                                        <div @click="openDishModal({{ json_encode($item) }}, '{{ addslashes($category->name) }}')" 
                                              class="w-24 h-20 sm:w-28 sm:h-22 rounded-2xl overflow-hidden cursor-pointer shadow-2xs border border-gray-100 flex items-center justify-center bg-[#fff7ed]">
                                             @if($item->photo)
                                                 <img src="{{ asset('storage/' . $item->photo) }}" alt="{{ $item->name }}" class="w-full h-full object-cover">
@@ -214,32 +241,48 @@
                                         </div>
 
                                         <!-- + Add Button / Stepper Controller -->
-                                        <div class="mt-2 w-max">
+                                        <div class="mt-2 w-max text-center">
                                             @if($item->is_available)
-                                                @if($inCartQty > 0)
-                                                    <!-- Quantity Stepper -->
-                                                    <div class="flex items-center bg-slate-950 text-white rounded-xl shadow-xs font-bold text-xs overflow-hidden border border-slate-800">
-                                                        <form action="{{ route('public.order.update-quantity', [$organization->id, $location->id, $item->id]) }}" method="POST" class="m-0 p-0">
-                                                            @csrf
-                                                            <input type="hidden" name="action" value="decrease">
-                                                            <button type="submit" class="px-2.5 py-1 text-slate-300 hover:text-white hover:bg-slate-900 transition text-sm font-black">&minus;</button>
-                                                        </form>
-                                                        <span class="px-2 py-1 font-mono font-black text-xs text-amber-400">{{ $inCartQty }}</span>
-                                                        <form action="{{ route('public.order.update-quantity', [$organization->id, $location->id, $item->id]) }}" method="POST" class="m-0 p-0">
-                                                            @csrf
-                                                            <input type="hidden" name="action" value="increase">
-                                                            <button type="submit" class="px-2.5 py-1 text-slate-300 hover:text-white hover:bg-slate-900 transition text-sm font-black">+</button>
-                                                        </form>
-                                                    </div>
-                                                @else
-                                                    <!-- Add Button -->
-                                                    <form action="{{ route('public.order.add', [$organization->id, $location->id]) }}" method="POST" class="m-0 p-0">
-                                                        @csrf
-                                                        <input type="hidden" name="menu_item_id" value="{{ $item->id }}">
-                                                        <button type="submit" class="bg-white border-2 border-slate-900 hover:bg-slate-950 hover:text-amber-400 text-slate-950 font-black px-4 py-1 rounded-xl text-xs uppercase tracking-wider shadow-2xs transition active:scale-95 flex items-center gap-1 cursor-pointer whitespace-nowrap">
+                                                @if($item->has_variants && $item->variants && $item->variants->count() > 0)
+                                                    @if($inCartQty > 0)
+                                                        <button type="button" @click="openDishModal({{ json_encode($item) }}, '{{ addslashes($category->name) }}')"
+                                                                class="bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-black px-3 py-1 rounded-xl text-xs uppercase tracking-wider shadow-2xs transition active:scale-95 flex items-center gap-1 cursor-pointer whitespace-nowrap">
+                                                            <span>{{ $inCartQty }} added</span>
+                                                            <span class="text-[10px]">&plus;</span>
+                                                        </button>
+                                                    @else
+                                                        <button type="button" @click="openDishModal({{ json_encode($item) }}, '{{ addslashes($category->name) }}')"
+                                                                class="bg-white border-2 border-slate-900 hover:bg-slate-950 hover:text-amber-400 text-slate-950 font-black px-4 py-1 rounded-xl text-xs uppercase tracking-wider shadow-2xs transition active:scale-95 flex items-center gap-1 cursor-pointer whitespace-nowrap">
                                                             <span>+ Add</span>
                                                         </button>
-                                                    </form>
+                                                    @endif
+                                                    <span class="text-[9px] text-gray-400 font-bold block mt-0.5">customisable</span>
+                                                @else
+                                                    @if($inCartQty > 0)
+                                                        <!-- Quantity Stepper -->
+                                                        <div class="flex items-center bg-slate-950 text-white rounded-xl shadow-xs font-bold text-xs overflow-hidden border border-slate-800">
+                                                            <form action="{{ route('public.order.update-quantity', [$organization->id, $location->id, $item->id]) }}" method="POST" class="m-0 p-0">
+                                                                @csrf
+                                                                <input type="hidden" name="action" value="decrease">
+                                                                <button type="submit" class="px-2.5 py-1 text-slate-300 hover:text-white hover:bg-slate-900 transition text-sm font-black">&minus;</button>
+                                                            </form>
+                                                            <span class="px-2 py-1 font-mono font-black text-xs text-amber-400">{{ $inCartQty }}</span>
+                                                            <form action="{{ route('public.order.update-quantity', [$organization->id, $location->id, $item->id]) }}" method="POST" class="m-0 p-0">
+                                                                @csrf
+                                                                <input type="hidden" name="action" value="increase">
+                                                                <button type="submit" class="px-2.5 py-1 text-slate-300 hover:text-white hover:bg-slate-900 transition text-sm font-black">+</button>
+                                                            </form>
+                                                        </div>
+                                                    @else
+                                                        <!-- Add Button -->
+                                                        <form action="{{ route('public.order.add', [$organization->id, $location->id]) }}" method="POST" class="m-0 p-0">
+                                                            @csrf
+                                                            <input type="hidden" name="menu_item_id" value="{{ $item->id }}">
+                                                            <button type="submit" class="bg-white border-2 border-slate-900 hover:bg-slate-950 hover:text-amber-400 text-slate-950 font-black px-4 py-1 rounded-xl text-xs uppercase tracking-wider shadow-2xs transition active:scale-95 flex items-center gap-1 cursor-pointer whitespace-nowrap">
+                                                                <span>+ Add</span>
+                                                            </button>
+                                                        </form>
+                                                    @endif
                                                 @endif
                                             @else
                                                 <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-md">
@@ -540,15 +583,38 @@
                     <p class="text-xs text-slate-600 font-medium leading-relaxed" x-text="modalDish.description || 'Authentic gourmet recipe freshly prepared to order with handpicked ingredients.'"></p>
                 </div>
 
+                <!-- Variations Selection Section -->
+                <template x-if="modalDish.has_variants && modalDish.variants && modalDish.variants.length > 0">
+                    <div class="space-y-2 pt-2 border-t border-slate-100">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-black uppercase tracking-wider text-slate-700">Choose Size / Portion</span>
+                            <span class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">Required</span>
+                        </div>
+                        <div class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-1">
+                            <template x-for="v in modalDish.variants" :key="v.id">
+                                <label :class="selectedVariantId == v.id ? 'border-amber-500 bg-amber-50/60 ring-2 ring-amber-500/20' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'"
+                                       class="flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition select-none">
+                                    <div class="flex items-center gap-2.5">
+                                        <input type="radio" name="modal_variant_choice" :value="v.id" x-model="selectedVariantId" @change="selectedVariantPrice = parseFloat(v.price)" class="accent-amber-500 w-4 h-4">
+                                        <span class="text-xs font-extrabold text-slate-900" x-text="v.name"></span>
+                                    </div>
+                                    <span class="text-sm font-mono font-black text-slate-950" x-text="'₹' + parseFloat(v.price).toFixed(2)"></span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
                 <div class="flex items-center justify-between pt-4 border-t border-slate-100">
                     <div>
                         <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Price</span>
-                        <span class="text-2xl font-black text-slate-950 font-mono">₹<span x-text="parseFloat(modalDish.price || 0).toFixed(2)"></span></span>
+                        <span class="text-2xl font-black text-slate-950 font-mono">₹<span x-text="(selectedVariantPrice || parseFloat(modalDish.price || 0)).toFixed(2)"></span></span>
                     </div>
                     
                     <form action="{{ route('public.order.add', [$organization->id, $location->id]) }}" method="POST" class="m-0">
                         @csrf
                         <input type="hidden" name="menu_item_id" :value="modalDish.id">
+                        <input type="hidden" name="menu_item_variant_id" :value="selectedVariantId">
                         <button type="submit" class="bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-black px-6 py-3 rounded-xl text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition active:scale-95 flex items-center gap-1.5 cursor-pointer">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
                             <span>Add to Order</span>
